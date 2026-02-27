@@ -20,6 +20,8 @@ import {
   Columns2,
   RectangleHorizontal,
   ArrowUpDown,
+  Minus,
+  Type,
 } from "lucide-react";
 import { ConfidenceChip } from "@/components/ram/ConfidenceChip";
 import { cn } from "@/lib/utils";

@@ -41,6 +41,17 @@ export default function LogbookList() {
         </button>
       </header>
 
+      {/* Mobile Location Bar */}
+      {isMobile && (
+        <button
+          onClick={() => navigate("/settings/location")}
+          className="flex items-center justify-center gap-1.5 h-8 bg-brand-100 text-text-xs font-medium text-gray-600 shrink-0"
+        >
+          <MapPin className="h-3 w-3 text-brand-500" />
+          {currentLocation.name}
+        </button>
+      )}
+
       {/* Search + Toggle */}
       <div className="px-ram-xl pt-ram-lg space-y-ram-lg">
         <div className="flex items-center gap-ram-lg">

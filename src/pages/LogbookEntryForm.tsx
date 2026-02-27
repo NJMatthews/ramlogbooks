@@ -41,7 +41,9 @@ export default function LogbookEntryForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { state, dispatch } = useLogbook();
-  const logbook = mockLogbooks.find((l) => l.id === id);
+  const { logbooks } = useDeviceLocation();
+  const logbook = logbooks.find((l) => l.id === id) ?? mockLogbooks.find((l) => l.id === id);
+  const isPaper = logbook?.format === "paper";
   const [quickFillDismissed, setQuickFillDismissed] = useState(false);
 
   const hasAnyValue = state.formFields.some((f) => f.value.trim() !== "" && f.type !== "toggle");

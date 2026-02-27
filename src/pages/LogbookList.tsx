@@ -13,7 +13,7 @@ const tabs = ["Active", "Archived"] as const;
 
 export default function LogbookList() {
   const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState<string>("Work");
+  const [activeTab, setActiveTab] = useState<string>("Active");
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const navigate = useNavigate();
   const { dispatch } = useLogbook();

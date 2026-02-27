@@ -19,12 +19,15 @@ export interface FormField {
   readOnly?: boolean;
 }
 
+export type FieldType = "Text" | "Number" | "Date" | "Time" | "Text Area" | "Toggle";
+
 export interface ScanField {
   id: string;
   name: string;
   value: string;
   confidence: number;
   approved: boolean;
+  fieldType: FieldType;
 }
 
 export interface SyncEntry {

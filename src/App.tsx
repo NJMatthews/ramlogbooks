@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LogbookContext, useLogbookState } from "@/hooks/useLogbookState";
 import LogbookList from "./pages/LogbookList";
 import LogbookEntryForm from "./pages/LogbookEntryForm";
+import LogbookHistory from "./pages/LogbookHistory";
 import ScanCamera from "./pages/ScanCamera";
 import FormReview from "./pages/FormReview";
 import OfflineQueue from "./pages/OfflineQueue";

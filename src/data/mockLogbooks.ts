@@ -73,14 +73,14 @@ export const mockLogbooks: Logbook[] = [
 ];
 
 export const cleanRoomFormFields: FormField[] = [
-  { id: "datetime", label: "Date/Time", type: "datetime", value: new Date().toLocaleString(), prefilled: true, timeSensitive: true },
-  { id: "operator", label: "Operator", type: "text", value: "John Smith (Badge #4521)", prefilled: true, timeSensitive: false, readOnly: true },
-  { id: "room", label: "Room", type: "text", value: "CR-302 (Building 3, Floor 2)", prefilled: true, timeSensitive: false, readOnly: true },
-  { id: "temperature", label: "Temperature (°C)", type: "number", value: "21.3", prefilled: true, timeSensitive: true, unit: "°C" },
-  { id: "humidity", label: "Humidity (%RH)", type: "number", value: "45.2", prefilled: true, timeSensitive: true, unit: "%RH" },
-  { id: "pressure", label: "Differential Pressure (Pa)", type: "number", value: "12.5", prefilled: true, timeSensitive: true, unit: "Pa" },
-  { id: "particle05", label: "Particle Count (0.5µm)", type: "number", value: "3200", prefilled: true, timeSensitive: true },
-  { id: "particle50", label: "Particle Count (5.0µm)", type: "number", value: "18", prefilled: true, timeSensitive: true },
+  { id: "datetime", label: "Date/Time", type: "datetime", value: "", prefilled: false, timeSensitive: false },
+  { id: "operator", label: "Operator", type: "text", value: "", prefilled: false, timeSensitive: false },
+  { id: "room", label: "Room", type: "text", value: "", prefilled: false, timeSensitive: false },
+  { id: "temperature", label: "Temperature (°C)", type: "number", value: "", prefilled: false, timeSensitive: false, unit: "°C" },
+  { id: "humidity", label: "Humidity (%RH)", type: "number", value: "", prefilled: false, timeSensitive: false, unit: "%RH" },
+  { id: "pressure", label: "Differential Pressure (Pa)", type: "number", value: "", prefilled: false, timeSensitive: false, unit: "Pa" },
+  { id: "particle05", label: "Particle Count (0.5µm)", type: "number", value: "", prefilled: false, timeSensitive: false },
+  { id: "particle50", label: "Particle Count (5.0µm)", type: "number", value: "", prefilled: false, timeSensitive: false },
   { id: "observations", label: "Observations", type: "textarea", value: "", prefilled: false, timeSensitive: false },
   { id: "status", label: "Status", type: "toggle", value: "pass", prefilled: false, timeSensitive: false },
 ];

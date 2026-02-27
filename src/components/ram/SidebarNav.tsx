@@ -1,12 +1,11 @@
-import { ClipboardList, CalendarDays, Settings, Box } from "lucide-react";
+import { BookOpen, ScanLine, RefreshCw } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { label: "Work Requests", icon: ClipboardList, path: "/requests" },
-  { label: "Work Agenda", icon: CalendarDays, path: "/" },
-  { label: "Settings", icon: Settings, path: "/settings" },
-  { label: "Assets", icon: Box, path: "/assets" },
+  { label: "My Logbooks", icon: BookOpen, path: "/" },
+  { label: "Scan & Convert", icon: ScanLine, path: "/scan" },
+  { label: "Sync Queue", icon: RefreshCw, path: "/queue" },
 ];
 
 export function SidebarNav() {
@@ -14,9 +13,10 @@ export function SidebarNav() {
   const navigate = useNavigate();
 
   return (
-    <aside className="hidden md:flex w-[226px] flex-col border-r border-border bg-background py-ram-3xl">
-      <div className="px-ram-xl mb-ram-4xl">
-        <h2 className="text-text-lg font-extrabold text-foreground">RAM</h2>
+    <aside className="hidden md:flex w-[226px] flex-col border-r border-border bg-background py-ram-3xl h-full overflow-y-auto shrink-0">
+      <div className="px-ram-xl mb-ram-4xl flex items-center gap-ram-md">
+        <div className="w-8 h-8 rounded bg-brand-500 flex items-center justify-center text-white font-extrabold text-text-sm">BM</div>
+        <h2 className="text-[17px] font-extrabold text-foreground" style={{ fontFamily: "'Avenir Heavy', sans-serif" }}>RAM Logbooks</h2>
       </div>
       <nav className="flex flex-col gap-ram-sm px-ram-md">
         {navItems.map((item) => {

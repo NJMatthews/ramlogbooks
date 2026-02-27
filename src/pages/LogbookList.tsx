@@ -25,7 +25,7 @@ export default function LogbookList() {
 
   return (
     <AppLayout>
-      <HeaderNav type="workAgenda" title="Work Agenda" />
+      <HeaderNav type="workAgenda" title="My Logbooks" />
 
       {/* Tabs */}
       <div className="flex border-b border-border">

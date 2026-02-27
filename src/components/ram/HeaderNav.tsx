@@ -17,7 +17,7 @@ export function HeaderNav({ type, title, onBack, rightAction }: HeaderNavProps) 
   };
 
   return (
-    <header className="sticky top-0 z-40 flex h-[98px] items-center border-b border-border bg-background px-ram-xl">
+    <header className="sticky top-0 z-40 flex h-[70px] items-center border-b border-border bg-card px-ram-xl">
       {type !== "workAgenda" && (
         <button onClick={handleBack} className="mr-ram-lg p-ram-md">
           <ArrowLeft className="h-6 w-6 text-foreground" />

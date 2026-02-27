@@ -123,14 +123,21 @@ export const phConductivityFormFields: FormField[] = [
 ];
 
 export const mockScanResults: ScanField[] = [
-  { id: "s1", name: "Date", value: "02/26/2026", confidence: 98, approved: false, fieldType: "Date", colSpan: 1, rowHeight: "short" },
-  { id: "s2", name: "Time", value: "14:30", confidence: 96, approved: false, fieldType: "Time", colSpan: 1, rowHeight: "short" },
-  { id: "s3", name: "Operator", value: "J. Martinez", confidence: 94, approved: false, fieldType: "Text", colSpan: 1, rowHeight: "short" },
-  { id: "s4", name: "Room Number", value: "CR-204", confidence: 99, approved: false, fieldType: "Text", colSpan: 1, rowHeight: "short" },
-  { id: "s5", name: "Temperature (°C)", value: "21.5", confidence: 91, approved: false, fieldType: "Number", colSpan: 1, rowHeight: "short" },
-  { id: "s6", name: "Humidity (%RH)", value: "44", confidence: 73, approved: false, fieldType: "Number", colSpan: 1, rowHeight: "short" },
-  { id: "s7", name: "Differential Pressure (Pa)", value: "12", confidence: 65, approved: false, fieldType: "Number", colSpan: 1, rowHeight: "short" },
-  { id: "s8", name: "Observations", value: "No issues observed", confidence: 45, approved: false, fieldType: "Text Area", colSpan: 2, rowHeight: "tall" },
+  { id: "s1", name: "Date", value: "02/27/2026", confidence: 98, approved: false, fieldType: "Date", colSpan: 1, rowHeight: "short" },
+  { id: "s2", name: "Equipment ID Number", value: "PH-2041", confidence: 96, approved: false, fieldType: "Text", colSpan: 1, rowHeight: "short" },
+  { id: "s3", name: "pH Buffer Solution", value: "7.00", confidence: 94, approved: false, fieldType: "Text", colSpan: 1, rowHeight: "short" },
+  { id: "s4", name: "Buffer Solution Lot #", value: "BUF-20260115", confidence: 91, approved: false, fieldType: "Text", colSpan: 1, rowHeight: "short" },
+  { id: "s5", name: "Buffer Solution Exp. Date", value: "08/15/2026", confidence: 93, approved: false, fieldType: "Date", colSpan: 1, rowHeight: "short" },
+  { id: "s6", name: "Slope (%)", value: "97.2", confidence: 88, approved: false, fieldType: "Number", colSpan: 1, rowHeight: "short" },
+  { id: "s7", name: "Slope Within Range? (Yes/No)", value: "Yes", confidence: 95, approved: false, fieldType: "Toggle", colSpan: 1, rowHeight: "short" },
+  { id: "s8", name: "Conductivity Standard (U/M)", value: "µS/cm", confidence: 73, approved: false, fieldType: "Text", colSpan: 1, rowHeight: "short" },
+  { id: "s9", name: "Conductivity Std. Lot #", value: "CS-884520", confidence: 65, approved: false, fieldType: "Text", colSpan: 1, rowHeight: "short" },
+  { id: "s10", name: "Conductivity Std. Exp. Date", value: "11/30/2026", confidence: 89, approved: false, fieldType: "Date", colSpan: 1, rowHeight: "short" },
+  { id: "s11", name: "Std. Verification (U/M)", value: "µS/cm", confidence: 72, approved: false, fieldType: "Text", colSpan: 1, rowHeight: "short" },
+  { id: "s12", name: "Std. Verification Within Range?", value: "Yes", confidence: 90, approved: false, fieldType: "Toggle", colSpan: 1, rowHeight: "short" },
+  { id: "s13", name: "Performed by Initials/Date", value: "JM 02/27", confidence: 85, approved: false, fieldType: "Text", colSpan: 1, rowHeight: "short" },
+  { id: "s14", name: "Verified by Initials/Date", value: "KL 02/27", confidence: 45, approved: false, fieldType: "Text", colSpan: 1, rowHeight: "short" },
+  { id: "s15", name: "Comments", value: "No issues observed", confidence: 50, approved: false, fieldType: "Text Area", colSpan: 2, rowHeight: "tall" },
 ];
 
 export const mockSyncQueue: SyncEntry[] = [

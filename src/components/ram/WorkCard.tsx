@@ -38,11 +38,17 @@ export function WorkCard({ logbook, onNewEntry, onViewHistory, showLocationBadge
         <div className="mt-0.5 text-sm text-gray-500">
           {logbook.entryCount} entries
         </div>
-        <div className="mt-2">
+        <div className="mt-2 flex items-center gap-2 flex-wrap">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs text-gray-600">
             <FileText className="h-3 w-3" />
             {logbook.fieldCount} fields
           </span>
+          {showLocationBadge && (
+            <span className="inline-flex items-center gap-1 text-text-xs text-success-900">
+              <Check className="h-3 w-3" />
+              This location
+            </span>
+          )}
         </div>
       </div>
       <div className="flex border-t border-border">

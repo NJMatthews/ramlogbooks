@@ -104,6 +104,7 @@ export default function LogbookList() {
             <WorkCard
               key={logbook.id}
               logbook={logbook}
+              showLocationBadge
               onNewEntry={() => {
                 dispatch({ type: "SELECT_LOGBOOK", id: logbook.id });
                 navigate(`/entry/${logbook.id}`);

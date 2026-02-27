@@ -46,7 +46,33 @@ export function SidebarNav() {
           );
         })}
       </nav>
-      <div className="px-ram-md mt-auto">
+      {/* Location Context Block */}
+      <div className="mt-auto border-t border-border px-ram-xl py-ram-xl">
+        <div className="flex items-center gap-ram-sm">
+          <MapPin className="h-4 w-4 shrink-0 text-brand-500" />
+          <span className="text-[15px] font-extrabold text-foreground">{currentLocation.name}</span>
+        </div>
+        <div className="mt-ram-sm flex items-center gap-ram-sm text-text-sm text-gray-600">
+          <span className="flex items-center gap-1">
+            <ClipboardList className="h-3 w-3 text-gray-500" />
+            {currentLocation.logbookCount} Logbooks
+          </span>
+          <span className="text-gray-400">·</span>
+          <span className="flex items-center gap-1">
+            <Package className="h-3 w-3 text-gray-500" />
+            {currentLocation.assetCount} Assets
+          </span>
+        </div>
+        <button
+          onClick={() => navigate("/settings/location")}
+          className="mt-ram-md flex items-center gap-ram-xxs text-text-sm font-medium text-brand-500 hover:underline"
+        >
+          Change Location
+          <ChevronRight className="h-3 w-3" />
+        </button>
+      </div>
+
+      <div className="px-ram-md border-t border-border pt-ram-md pb-ram-md">
         <button
           onClick={() => navigate("/settings")}
           className={cn(

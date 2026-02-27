@@ -20,19 +20,22 @@ function AppInner() {
   const { state, dispatch } = useLogbookState();
 
   return (
-    <LogbookContext.Provider value={{ state, dispatch }}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LogbookList />} />
-          <Route path="/entry/:id" element={<LogbookEntryForm />} />
-          <Route path="/history/:id" element={<LogbookHistory />} />
-          <Route path="/scan" element={<ScanCamera />} />
-          <Route path="/review" element={<FormReview />} />
-          <Route path="/queue" element={<OfflineQueue />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </LogbookContext.Provider>
+    <DeviceLocationProvider>
+      <LogbookContext.Provider value={{ state, dispatch }}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LogbookList />} />
+            <Route path="/entry/:id" element={<LogbookEntryForm />} />
+            <Route path="/history/:id" element={<LogbookHistory />} />
+            <Route path="/scan" element={<ScanCamera />} />
+            <Route path="/review" element={<FormReview />} />
+            <Route path="/queue" element={<OfflineQueue />} />
+            <Route path="/settings/location" element={<LocationSettings />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </LogbookContext.Provider>
+    </DeviceLocationProvider>
   );
 }
 

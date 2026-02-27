@@ -16,13 +16,15 @@ export default function LogbookList() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const navigate = useNavigate();
   const { dispatch } = useLogbook();
+  const { currentLocation, logbooks } = useDeviceLocation();
+  const isMobile = useIsMobile();
 
-  const filtered = mockLogbooks.filter((l) => {
+  const filtered = logbooks.filter((l) => {
     const matchesSearch =
       l.name.toLowerCase().includes(search.toLowerCase()) ||
       l.location.toLowerCase().includes(search.toLowerCase());
-    const matchesTab = l.status === activeTab;
-    return matchesSearch && matchesTab;
+    const matchesTab = l.status === activeTab || activeTab === "active"; // show all for location-filtered data
+    return matchesSearch;
   });
 
   return (

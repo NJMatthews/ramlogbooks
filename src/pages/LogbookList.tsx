@@ -94,6 +94,7 @@ export default function LogbookList() {
                 dispatch({ type: "SELECT_LOGBOOK", id: logbook.id });
                 navigate(`/entry/${logbook.id}`);
               }}
+              onViewHistory={() => navigate(`/history/${logbook.id}`)}
             />
           ))}
         </div>

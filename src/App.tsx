@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LogbookContext, useLogbookState } from "@/hooks/useLogbookState";
 import LogbookList from "./pages/LogbookList";
 import LogbookEntryForm from "./pages/LogbookEntryForm";
+import LogbookHistory from "./pages/LogbookHistory";
 import ScanCamera from "./pages/ScanCamera";
 import FormReview from "./pages/FormReview";
 import OfflineQueue from "./pages/OfflineQueue";
@@ -22,6 +23,7 @@ function AppInner() {
         <Routes>
           <Route path="/" element={<LogbookList />} />
           <Route path="/entry/:id" element={<LogbookEntryForm />} />
+          <Route path="/history/:id" element={<LogbookHistory />} />
           <Route path="/scan" element={<ScanCamera />} />
           <Route path="/review" element={<FormReview />} />
           <Route path="/queue" element={<OfflineQueue />} />

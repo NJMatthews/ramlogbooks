@@ -14,12 +14,12 @@ export function AppLayout({ children, hideNav }: AppLayoutProps) {
   const { state } = useLogbook();
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
+    <div className="flex h-screen w-full bg-background overflow-hidden">
       {!isMobile && !hideNav && <SidebarNav />}
-      <div className="flex flex-1 flex-col min-h-screen">
+      <div className="flex flex-1 flex-col h-screen overflow-hidden">
         {state.isOffline && <StatusBar />}
-        <main className="flex-1 overflow-y-auto">{children}</main>
-        {isMobile && !hideNav && <BottomNav />}
+        <main className="flex-1 overflow-y-auto flex flex-col">{children}</main>
+        {isMobile && !hideNav && <div className="shrink-0"><BottomNav /></div>}
       </div>
     </div>
   );

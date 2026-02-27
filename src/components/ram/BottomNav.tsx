@@ -1,12 +1,11 @@
-import { ClipboardList, CalendarDays, Settings, Box } from "lucide-react";
+import { BookOpen, ScanLine, RefreshCw } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { label: "Work Requests", icon: ClipboardList, path: "/requests" },
-  { label: "Work Agenda", icon: CalendarDays, path: "/" },
-  { label: "Settings", icon: Settings, path: "/settings" },
-  { label: "Assets", icon: Box, path: "/assets" },
+  { label: "My Logbooks", icon: BookOpen, path: "/" },
+  { label: "Scan & Convert", icon: ScanLine, path: "/scan" },
+  { label: "Sync Queue", icon: RefreshCw, path: "/queue" },
 ];
 
 export function BottomNav() {

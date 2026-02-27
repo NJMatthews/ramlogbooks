@@ -1,7 +1,8 @@
-import { BookOpen, ScanLine, RefreshCw, Settings } from "lucide-react";
+import { BookOpen, ScanLine, RefreshCw, Settings, MapPin, ClipboardList, Package, ChevronRight } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/logo.png";
+import { useDeviceLocation } from "@/hooks/useDeviceLocation";
 
 const navItems = [
   { label: "My Logbooks", icon: BookOpen, path: "/" },
@@ -12,6 +13,7 @@ const navItems = [
 export function SidebarNav() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { currentLocation } = useDeviceLocation();
 
   return (
     <aside className="hidden md:flex w-[226px] flex-col border-r border-border bg-card py-ram-3xl h-full overflow-y-auto shrink-0">
@@ -44,7 +46,33 @@ export function SidebarNav() {
           );
         })}
       </nav>
-      <div className="px-ram-md mt-auto">
+      {/* Location Context Block */}
+      <div className="mt-auto border-t border-border px-ram-xl py-ram-xl">
+        <div className="flex items-center gap-ram-sm">
+          <MapPin className="h-4 w-4 shrink-0 text-brand-500" />
+          <span className="text-[15px] font-extrabold text-foreground">{currentLocation.name}</span>
+        </div>
+        <div className="mt-ram-sm flex items-center gap-ram-sm text-text-sm text-gray-600">
+          <span className="flex items-center gap-1">
+            <ClipboardList className="h-3 w-3 text-gray-500" />
+            {currentLocation.logbookCount} Logbooks
+          </span>
+          <span className="text-gray-400">·</span>
+          <span className="flex items-center gap-1">
+            <Package className="h-3 w-3 text-gray-500" />
+            {currentLocation.assetCount} Assets
+          </span>
+        </div>
+        <button
+          onClick={() => navigate("/settings/location")}
+          className="mt-ram-md flex items-center gap-ram-xxs text-text-sm font-medium text-brand-500 hover:underline"
+        >
+          Change Location
+          <ChevronRight className="h-3 w-3" />
+        </button>
+      </div>
+
+      <div className="px-ram-md border-t border-border pt-ram-md pb-ram-md">
         <button
           onClick={() => navigate("/settings")}
           className={cn(

@@ -4,10 +4,11 @@ import { AppLayout } from "@/components/ram/AppLayout";
 import { SearchBar } from "@/components/ram/SearchBar";
 import { FilterChip } from "@/components/ram/FilterChip";
 import { WorkCard } from "@/components/ram/WorkCard";
-import { mockLogbooks } from "@/data/mockLogbooks";
 import { cn } from "@/lib/utils";
 import { useLogbook } from "@/hooks/useLogbookState";
-import { ScanLine } from "lucide-react";
+import { useDeviceLocation } from "@/hooks/useDeviceLocation";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ScanLine, MapPin, Check } from "lucide-react";
 
 export default function LogbookList() {
   const [search, setSearch] = useState("");
@@ -15,13 +16,15 @@ export default function LogbookList() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const navigate = useNavigate();
   const { dispatch } = useLogbook();
+  const { currentLocation, logbooks } = useDeviceLocation();
+  const isMobile = useIsMobile();
 
-  const filtered = mockLogbooks.filter((l) => {
+  const filtered = logbooks.filter((l) => {
     const matchesSearch =
       l.name.toLowerCase().includes(search.toLowerCase()) ||
       l.location.toLowerCase().includes(search.toLowerCase());
-    const matchesTab = l.status === activeTab;
-    return matchesSearch && matchesTab;
+    const matchesTab = l.status === activeTab || activeTab === "active"; // show all for location-filtered data
+    return matchesSearch;
   });
 
   return (
@@ -37,6 +40,17 @@ export default function LogbookList() {
           Scan New Logbook
         </button>
       </header>
+
+      {/* Mobile Location Bar */}
+      {isMobile && (
+        <button
+          onClick={() => navigate("/settings/location")}
+          className="flex items-center justify-center gap-1.5 h-8 bg-brand-100 text-text-xs font-medium text-gray-600 shrink-0"
+        >
+          <MapPin className="h-3 w-3 text-brand-500" />
+          {currentLocation.name}
+        </button>
+      )}
 
       {/* Search + Toggle */}
       <div className="px-ram-xl pt-ram-lg space-y-ram-lg">
@@ -90,6 +104,7 @@ export default function LogbookList() {
             <WorkCard
               key={logbook.id}
               logbook={logbook}
+              showLocationBadge
               onNewEntry={() => {
                 dispatch({ type: "SELECT_LOGBOOK", id: logbook.id });
                 navigate(`/entry/${logbook.id}`);

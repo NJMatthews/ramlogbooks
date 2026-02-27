@@ -104,6 +104,24 @@ export const cleanRoomFormFields: FormField[] = [
   { id: "status", label: "Status", type: "toggle", value: "pass", prefilled: false, timeSensitive: false },
 ];
 
+export const phConductivityFormFields: FormField[] = [
+  { id: "equipmentId", label: "Equipment ID Number", type: "text", value: "", prefilled: false, timeSensitive: false },
+  { id: "date", label: "Date", type: "datetime", value: "", prefilled: false, timeSensitive: false },
+  { id: "phBufferSolution", label: "pH Buffer Solution*", type: "text", value: "", prefilled: false, timeSensitive: false },
+  { id: "bufferSolutionLot", label: "Buffer Solution Lot #", type: "text", value: "", prefilled: false, timeSensitive: false },
+  { id: "bufferExpDate", label: "Buffer Solution Expiration Date", type: "datetime", value: "", prefilled: false, timeSensitive: false },
+  { id: "slopePct", label: "Slope (%)", type: "number", value: "", prefilled: false, timeSensitive: false, unit: "%" },
+  { id: "slopeInRange", label: "Slope Within Range? (92.0%–102.0%)", type: "toggle", value: "", prefilled: false, timeSensitive: false },
+  { id: "conductivityStdUnit", label: "Conductivity Standard (Select U/M)", type: "text", value: "", prefilled: false, timeSensitive: false },
+  { id: "conductivityStdLot", label: "Conductivity Standard Lot #", type: "text", value: "", prefilled: false, timeSensitive: false },
+  { id: "conductivityExpDate", label: "Conductivity Standard Expiration Date", type: "datetime", value: "", prefilled: false, timeSensitive: false },
+  { id: "stdVerificationUnit", label: "Standard Verification (Select U/M)", type: "text", value: "", prefilled: false, timeSensitive: false },
+  { id: "stdVerInRange", label: "Standard Verification Within Range? (±5%)", type: "toggle", value: "", prefilled: false, timeSensitive: false },
+  { id: "performedBy", label: "Performed by Initials/Date", type: "text", value: "", prefilled: false, timeSensitive: false },
+  { id: "verifiedBy", label: "Verified by Initials/Date", type: "text", value: "", prefilled: false, timeSensitive: false },
+  { id: "comments", label: "Comments", type: "textarea", value: "", prefilled: false, timeSensitive: false },
+];
+
 export const mockScanResults: ScanField[] = [
   { id: "s1", name: "Date", value: "02/26/2026", confidence: 98, approved: false, fieldType: "Date", colSpan: 1, rowHeight: "short" },
   { id: "s2", name: "Time", value: "14:30", confidence: 96, approved: false, fieldType: "Time", colSpan: 1, rowHeight: "short" },

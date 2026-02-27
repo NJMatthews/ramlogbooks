@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/ram/AppLayout";
 import { HeaderNav } from "@/components/ram/HeaderNav";
@@ -17,6 +17,9 @@ import {
   GripVertical,
   Plus,
   HelpCircle,
+  Columns2,
+  RectangleHorizontal,
+  ArrowUpDown,
 } from "lucide-react";
 import { ConfidenceChip } from "@/components/ram/ConfidenceChip";
 import { cn } from "@/lib/utils";
@@ -25,7 +28,7 @@ import { mockScanResults, type ScanField, type FieldType } from "@/data/mockLogb
 const SCAN_STEPS = ["Capture", "Process", "Review", "Layout", "Publish"];
 const FIELD_TYPES: FieldType[] = ["Text", "Number", "Date", "Time", "Text Area", "Toggle"];
 
-type FlowPhase = "tour" | "capture-landing" | "camera" | "processing" | "review" | "review-edit" | "layout" | "publish";
+type FlowPhase = "tour" | "capture-landing" | "camera" | "processing" | "review" | "review-edit" | "layout" | "layout-edit" | "publish";
 
 const PROCESS_STEPS = [
   "Detecting page boundaries...",
@@ -42,6 +45,10 @@ export default function ScanCamera() {
   const [layoutChoice, setLayoutChoice] = useState<"paper" | "digital">("paper");
   const [processStep, setProcessStep] = useState(0);
   const [showTour, setShowTour] = useState(false);
+  const [layoutSpacing, setLayoutSpacing] = useState<"compact" | "normal" | "relaxed">("normal");
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dropTarget, setDropTarget] = useState<number | null>(null);
+  const dragCounter = useRef(0);
 
   // Processing animation
   useEffect(() => {
@@ -63,7 +70,7 @@ export default function ScanCamera() {
     phase === "capture-landing" || phase === "camera" ? 0
     : phase === "processing" ? 1
     : phase === "review" || phase === "review-edit" ? 2
-    : phase === "layout" ? 3
+    : phase === "layout" || phase === "layout-edit" ? 3
     : phase === "publish" ? 4
     : 0;
 
@@ -87,7 +94,7 @@ export default function ScanCamera() {
     const newId = `s${Date.now()}`;
     setFields((prev) => [
       ...prev,
-      { id: newId, name: "", value: "", confidence: 100, approved: false, fieldType: "Text" },
+      { id: newId, name: "", value: "", confidence: 100, approved: false, fieldType: "Text", colSpan: 1, rowHeight: "short" },
     ]);
   };
 
@@ -441,6 +448,206 @@ export default function ScanCamera() {
     );
   }
 
+  // Layout Edit - Form Builder
+  if (phase === "layout-edit") {
+    const spacingClass = layoutSpacing === "compact" ? "gap-2" : layoutSpacing === "relaxed" ? "gap-6" : "gap-4";
+
+    const handleDragStart = (index: number) => {
+      setDragIndex(index);
+    };
+
+    const handleDragEnter = (index: number) => {
+      dragCounter.current++;
+      setDropTarget(index);
+    };
+
+    const handleDragLeave = () => {
+      dragCounter.current--;
+      if (dragCounter.current === 0) {
+        setDropTarget(null);
+      }
+    };
+
+    const handleDrop = (targetIndex: number) => {
+      if (dragIndex === null || dragIndex === targetIndex) {
+        setDragIndex(null);
+        setDropTarget(null);
+        dragCounter.current = 0;
+        return;
+      }
+      setFields((prev) => {
+        const updated = [...prev];
+        const [moved] = updated.splice(dragIndex, 1);
+        updated.splice(targetIndex > dragIndex ? targetIndex - 1 : targetIndex, 0, moved);
+        return updated;
+      });
+      setDragIndex(null);
+      setDropTarget(null);
+      dragCounter.current = 0;
+    };
+
+    const handleDragEnd = () => {
+      setDragIndex(null);
+      setDropTarget(null);
+      dragCounter.current = 0;
+    };
+
+    const toggleColSpan = (id: string) => {
+      setFields((prev) =>
+        prev.map((f) => (f.id === id ? { ...f, colSpan: f.colSpan === 1 ? 2 : 1 } : f))
+      );
+    };
+
+    const toggleRowHeight = (id: string) => {
+      setFields((prev) =>
+        prev.map((f) => (f.id === id ? { ...f, rowHeight: f.rowHeight === "short" ? "tall" : "short" } : f))
+      );
+    };
+
+    return (
+      <AppLayout>
+        <HeaderNav type="back" title="Edit Layout" onBack={() => setPhase("publish")} />
+        <ScanStepper steps={SCAN_STEPS} currentStep={3} className="border-b border-border bg-card" />
+
+        <div className="flex-1 overflow-y-auto px-ram-xl py-ram-xl">
+          <div className="mx-auto max-w-[600px]">
+            {/* Spacing control */}
+            <div className="flex items-center justify-between mb-ram-xl">
+              <span className="text-sm font-extrabold text-foreground">Spacing</span>
+              <div className="flex gap-1 rounded-ram-md border border-border overflow-hidden">
+                {(["compact", "normal", "relaxed"] as const).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setLayoutSpacing(s)}
+                    className={cn(
+                      "px-3 py-1.5 text-xs font-medium capitalize transition-colors",
+                      layoutSpacing === s
+                        ? "bg-brand-500 text-white"
+                        : "bg-card text-foreground hover:bg-muted"
+                    )}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Draggable grid */}
+            <div className={cn("grid grid-cols-2", spacingClass)}>
+              {fields.map((field, index) => (
+                <div
+                  key={field.id}
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragEnter={() => handleDragEnter(index)}
+                  onDragLeave={handleDragLeave}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => handleDrop(index)}
+                  onDragEnd={handleDragEnd}
+                  className={cn(
+                    "relative rounded-ram-md border bg-card p-3 transition-all cursor-grab active:cursor-grabbing",
+                    field.colSpan === 2 ? "col-span-2" : "col-span-1",
+                    dragIndex === index ? "opacity-40 scale-95" : "opacity-100",
+                    dropTarget === index && dragIndex !== index
+                      ? "ring-2 ring-brand-500 ring-offset-1"
+                      : "border-border"
+                  )}
+                >
+                  {/* Drag handle + field name */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <input
+                      type="text"
+                      value={field.name}
+                      onChange={(e) => updateFieldName(field.id, e.target.value)}
+                      placeholder="Field name"
+                      className="flex-1 text-sm font-extrabold text-foreground bg-transparent outline-none border-b border-transparent focus:border-brand-500 transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <button
+                      onClick={() => removeField(field.id)}
+                      className="text-muted-foreground hover:text-destructive p-0.5 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  {/* Field type badge */}
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {FIELD_TYPES.map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => updateFieldType(field.id, t)}
+                        className={cn(
+                          "px-2 py-0.5 rounded text-xs font-medium transition-colors",
+                          field.fieldType === t
+                            ? "bg-brand-500 text-white"
+                            : "bg-muted text-muted-foreground hover:bg-accent"
+                        )}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Width + Height controls */}
+                  <div className="flex items-center gap-3 border-t border-border pt-2">
+                    <button
+                      onClick={() => toggleColSpan(field.id)}
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      title={field.colSpan === 1 ? "Half width" : "Full width"}
+                    >
+                      {field.colSpan === 1 ? (
+                        <><Columns2 className="h-3.5 w-3.5" /> Half</>
+                      ) : (
+                        <><RectangleHorizontal className="h-3.5 w-3.5" /> Full</>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => toggleRowHeight(field.id)}
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      title={field.rowHeight === "short" ? "Short" : "Tall"}
+                    >
+                      <ArrowUpDown className="h-3.5 w-3.5" />
+                      {field.rowHeight === "short" ? "Short" : "Tall"}
+                    </button>
+                  </div>
+
+                  {/* Height preview indicator */}
+                  {field.rowHeight === "tall" && (
+                    <div className="mt-2 h-10 rounded border border-dashed border-muted-foreground/30 flex items-center justify-center">
+                      <span className="text-xs text-muted-foreground">Tall field</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Add field button */}
+              <button
+                onClick={addField}
+                className="col-span-2 flex items-center justify-center gap-2 py-4 rounded-ram-md border-2 border-dashed border-muted-foreground/30 text-brand-500 font-medium hover:border-brand-500 transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                Add Field
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="sticky bottom-0 border-t border-border bg-card px-ram-xl py-ram-xl shrink-0">
+          <div className="mx-auto max-w-[600px]">
+            <Button
+              onClick={() => setPhase("publish")}
+              className="w-full h-12 rounded-ram-md bg-brand-500 text-white font-extrabold hover:bg-brand-600 text-base"
+            >
+              Done
+            </Button>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
   // Step 4: Layout selection
   if (phase === "layout") {
     return (
@@ -670,7 +877,7 @@ export default function ScanCamera() {
           <div className="mx-auto max-w-[600px] flex gap-ram-lg">
             <Button
               variant="outline"
-              onClick={() => setPhase("layout")}
+              onClick={() => setPhase("layout-edit")}
               className="flex-1 h-12 rounded-ram-md border-foreground text-foreground font-extrabold"
             >
               Edit Layout

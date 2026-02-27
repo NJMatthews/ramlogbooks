@@ -123,7 +123,7 @@ export default function LogbookHistory() {
             <span className="text-xs text-muted-foreground">{mockHistoryEntries.length} entries</span>
           </div>
           <div className="flex-1 overflow-auto">
-            <table className="w-full text-sm border-collapse">
+            <table className="min-w-[800px] text-sm border-collapse">
               <thead className="sticky top-0 z-10">
                 <tr className="bg-muted text-left">
                   <th className="px-3 py-2 font-extrabold text-muted-foreground text-xs whitespace-nowrap border-b border-border">Date / Time</th>

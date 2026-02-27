@@ -16,8 +16,8 @@ export function SidebarNav() {
   return (
     <aside className="hidden md:flex w-[226px] flex-col border-r border-border bg-background py-ram-3xl h-full overflow-y-auto shrink-0">
       <div className="px-ram-xl mb-ram-4xl flex items-center gap-ram-md">
-        <div className="w-8 h-8 rounded bg-brand-500 flex items-center justify-center">
-          <BookOpen className="h-4 w-4 text-white" />
+        <div className="w-8 h-8 rounded overflow-hidden">
+          <img src={bmLogo} alt="BM Logo" className="w-full h-full object-cover" />
         </div>
         <h2 className="text-[17px] font-extrabold text-foreground" style={{ fontFamily: "'Avenir Heavy', sans-serif" }}>RAM Logbooks</h2>
       </div>

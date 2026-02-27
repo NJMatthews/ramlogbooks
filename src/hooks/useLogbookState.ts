@@ -1,5 +1,10 @@
 import { useReducer, createContext, useContext } from "react";
-import { cleanRoomFormFields, type FormField, type SyncEntry, mockSyncQueue } from "@/data/mockLogbooks";
+import { cleanRoomFormFields, phConductivityFormFields, type FormField, type SyncEntry, mockSyncQueue } from "@/data/mockLogbooks";
+
+const formFieldsByLogbook: Record<string, FormField[]> = {
+  "1": cleanRoomFormFields,
+  "4": phConductivityFormFields,
+};
 
 interface LogbookState {
   selectedLogbookId: string | null;
@@ -36,7 +41,7 @@ const initialState: LogbookState = {
 function logbookReducer(state: LogbookState, action: Action): LogbookState {
   switch (action.type) {
     case "SELECT_LOGBOOK":
-      return { ...state, selectedLogbookId: action.id, confirmedFields: new Set() };
+      return { ...state, selectedLogbookId: action.id, formFields: formFieldsByLogbook[action.id] ?? cleanRoomFormFields, confirmedFields: new Set() };
     case "UPDATE_FIELD":
       return {
         ...state,
@@ -61,8 +66,10 @@ function logbookReducer(state: LogbookState, action: Action): LogbookState {
       return { ...state, showSuccess: false };
     case "TOGGLE_OFFLINE":
       return { ...state, isOffline: !state.isOffline };
-    case "RESET_FORM":
-      return { ...state, formFields: cleanRoomFormFields, confirmedFields: new Set(), showSuccess: false };
+    case "RESET_FORM": {
+      const fields = formFieldsByLogbook[state.selectedLogbookId ?? ""] ?? cleanRoomFormFields;
+      return { ...state, formFields: fields, confirmedFields: new Set(), showSuccess: false };
+    }
     default:
       return state;
   }

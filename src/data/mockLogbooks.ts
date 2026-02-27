@@ -103,14 +103,14 @@ export const cleanRoomFormFields: FormField[] = [
 ];
 
 export const mockScanResults: ScanField[] = [
-  { id: "s1", name: "Date", value: "02/26/2026", confidence: 98, approved: false, fieldType: "Date" },
-  { id: "s2", name: "Time", value: "14:30", confidence: 96, approved: false, fieldType: "Time" },
-  { id: "s3", name: "Operator", value: "J. Martinez", confidence: 94, approved: false, fieldType: "Text" },
-  { id: "s4", name: "Room Number", value: "CR-204", confidence: 99, approved: false, fieldType: "Text" },
-  { id: "s5", name: "Temperature (°C)", value: "21.5", confidence: 91, approved: false, fieldType: "Number" },
-  { id: "s6", name: "Humidity (%RH)", value: "44", confidence: 73, approved: false, fieldType: "Number" },
-  { id: "s7", name: "Differential Pressure (Pa)", value: "12", confidence: 65, approved: false, fieldType: "Number" },
-  { id: "s8", name: "Observations", value: "No issues observed", confidence: 45, approved: false, fieldType: "Text Area" },
+  { id: "s1", name: "Date", value: "02/26/2026", confidence: 98, approved: false, fieldType: "Date", colSpan: 1, rowHeight: "short" },
+  { id: "s2", name: "Time", value: "14:30", confidence: 96, approved: false, fieldType: "Time", colSpan: 1, rowHeight: "short" },
+  { id: "s3", name: "Operator", value: "J. Martinez", confidence: 94, approved: false, fieldType: "Text", colSpan: 1, rowHeight: "short" },
+  { id: "s4", name: "Room Number", value: "CR-204", confidence: 99, approved: false, fieldType: "Text", colSpan: 1, rowHeight: "short" },
+  { id: "s5", name: "Temperature (°C)", value: "21.5", confidence: 91, approved: false, fieldType: "Number", colSpan: 1, rowHeight: "short" },
+  { id: "s6", name: "Humidity (%RH)", value: "44", confidence: 73, approved: false, fieldType: "Number", colSpan: 1, rowHeight: "short" },
+  { id: "s7", name: "Differential Pressure (Pa)", value: "12", confidence: 65, approved: false, fieldType: "Number", colSpan: 1, rowHeight: "short" },
+  { id: "s8", name: "Observations", value: "No issues observed", confidence: 45, approved: false, fieldType: "Text Area", colSpan: 2, rowHeight: "tall" },
 ];
 
 export const mockSyncQueue: SyncEntry[] = [

@@ -87,7 +87,7 @@ export default function ScanCamera() {
     const newId = `s${Date.now()}`;
     setFields((prev) => [
       ...prev,
-      { id: newId, name: "", value: "", confidence: 100, approved: false, fieldType: "Text" },
+      { id: newId, name: "", value: "", confidence: 100, approved: false, fieldType: "Text", colSpan: 1, rowHeight: "short" },
     ]);
   };
 

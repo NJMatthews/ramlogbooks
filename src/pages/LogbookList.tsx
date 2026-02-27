@@ -9,7 +9,7 @@ import { mockLogbooks } from "@/data/mockLogbooks";
 import { cn } from "@/lib/utils";
 import { useLogbook } from "@/hooks/useLogbookState";
 
-const tabs = ["Work", "Asset", "Work Plan"] as const;
+const tabs = ["Active", "Archived"] as const;
 
 export default function LogbookList() {
   const [search, setSearch] = useState("");

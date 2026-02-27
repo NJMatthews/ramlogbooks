@@ -17,6 +17,9 @@ import {
   GripVertical,
   Plus,
   HelpCircle,
+  Columns2,
+  RectangleHorizontal,
+  ArrowUpDown,
 } from "lucide-react";
 import { ConfidenceChip } from "@/components/ram/ConfidenceChip";
 import { cn } from "@/lib/utils";

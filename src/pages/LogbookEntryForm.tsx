@@ -5,11 +5,13 @@ import { HeaderNav } from "@/components/ram/HeaderNav";
 import { RAMInput } from "@/components/ram/RAMInput";
 import { RAMTextarea } from "@/components/ram/RAMTextarea";
 import { RAMToggle } from "@/components/ram/RAMToggle";
+import { PaperEntryForm } from "@/components/ram/PaperEntryForm";
 import { ESignDrawer } from "@/components/ram/ESignDrawer";
 import { SuccessDrawer } from "@/components/ram/SuccessDrawer";
 import { Button } from "@/components/ui/button";
 import { useLogbook } from "@/hooks/useLogbookState";
 import { mockLogbooks } from "@/data/mockLogbooks";
+import { useDeviceLocation } from "@/hooks/useDeviceLocation";
 import { Calendar, Zap, Clock, ArrowRight } from "lucide-react";
 
 // Simulated "last entry" values for Quick Fill

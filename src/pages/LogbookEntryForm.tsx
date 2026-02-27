@@ -73,81 +73,91 @@ export default function LogbookEntryForm() {
       />
 
       <div className="flex-1 overflow-y-auto px-ram-xl py-ram-xl">
-        <div className="mx-auto max-w-[600px] space-y-ram-xl">
-          {/* Quick Fill Banner */}
-          {!quickFillDismissed && !hasAnyValue && (
-            <div className="rounded-ram-xl border border-border bg-card p-4 animate-fade-in">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-foreground" />
-                  <span className="text-sm font-extrabold text-foreground">Quick Fill from Previous Entry</span>
+        {isPaper ? (
+          <PaperEntryForm
+            fields={state.formFields}
+            logbookName={logbook?.name ?? "Paper Logbook"}
+            onUpdateField={(fieldId, value) =>
+              dispatch({ type: "UPDATE_FIELD", fieldId, value })
+            }
+          />
+        ) : (
+          <div className="mx-auto max-w-[600px] space-y-ram-xl">
+            {/* Quick Fill Banner */}
+            {!quickFillDismissed && !hasAnyValue && (
+              <div className="rounded-ram-xl border border-border bg-card p-4 animate-fade-in">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-foreground" />
+                    <span className="text-sm font-extrabold text-foreground">Quick Fill from Previous Entry</span>
+                  </div>
+                  <button
+                    onClick={() => setQuickFillDismissed(true)}
+                    className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+                <p className="text-sm text-gray-500 mb-3">
+                  {lastEntryMeta.operator} — {lastEntryMeta.date}
+                </p>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {lastEntryMeta.chips.map((chip) => (
+                    <span key={chip} className="text-xs border border-border rounded-full px-3 py-1 text-gray-600 bg-muted">
+                      {chip}
+                    </span>
+                  ))}
                 </div>
                 <button
-                  onClick={() => setQuickFillDismissed(true)}
-                  className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                  onClick={handleQuickFill}
+                  className="text-sm font-medium text-brand-500 hover:text-brand-600 flex items-center gap-1 transition-colors"
                 >
-                  Dismiss
+                  Apply all previous values
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </button>
               </div>
-              <p className="text-sm text-gray-500 mb-3">
-                {lastEntryMeta.operator} — {lastEntryMeta.date}
-              </p>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {lastEntryMeta.chips.map((chip) => (
-                  <span key={chip} className="text-xs border border-border rounded-full px-3 py-1 text-gray-600 bg-muted">
-                    {chip}
-                  </span>
-                ))}
-              </div>
-              <button
-                onClick={handleQuickFill}
-                className="text-sm font-medium text-brand-500 hover:text-brand-600 flex items-center gap-1 transition-colors"
-              >
-                Apply all previous values
-                <ArrowRight className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          )}
+            )}
 
-          {state.formFields.map((field) => {
-            if (field.type === "textarea") {
+            {state.formFields.map((field) => {
+              if (field.type === "textarea") {
+                return (
+                  <RAMTextarea
+                    key={field.id}
+                    label={field.label}
+                    value={field.value}
+                    onChange={(v) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v })}
+                    placeholder="Enter observations..."
+                    expanded
+                  />
+                );
+              }
+              if (field.type === "toggle") {
+                return (
+                  <RAMToggle
+                    key={field.id}
+                    label={field.label}
+                    value={field.value === "pass"}
+                    onChange={(v) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v ? "pass" : "fail" })}
+                  />
+                );
+              }
               return (
-                <RAMTextarea
+                <RAMInput
                   key={field.id}
                   label={field.label}
                   value={field.value}
                   onChange={(v) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v })}
-                  placeholder="Enter observations..."
-                  expanded
+                  readOnly={field.readOnly}
+                  type={field.type === "number" ? "number" : "text"}
+                  leadingIcon={field.type === "datetime" ? <Calendar className="h-4 w-4" /> : undefined}
+                  needsConfirmation={field.timeSensitive && field.prefilled}
+                  confirmed={state.confirmedFields.has(field.id)}
+                  onConfirm={() => dispatch({ type: "CONFIRM_FIELD", fieldId: field.id })}
                 />
               );
-            }
-            if (field.type === "toggle") {
-              return (
-                <RAMToggle
-                  key={field.id}
-                  label={field.label}
-                  value={field.value === "pass"}
-                  onChange={(v) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v ? "pass" : "fail" })}
-                />
-              );
-            }
-            return (
-              <RAMInput
-                key={field.id}
-                label={field.label}
-                value={field.value}
-                onChange={(v) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v })}
-                readOnly={field.readOnly}
-                type={field.type === "number" ? "number" : "text"}
-                leadingIcon={field.type === "datetime" ? <Calendar className="h-4 w-4" /> : undefined}
-                needsConfirmation={field.timeSensitive && field.prefilled}
-                confirmed={state.confirmedFields.has(field.id)}
-                onConfirm={() => dispatch({ type: "CONFIRM_FIELD", fieldId: field.id })}
-              />
-            );
-          })}
-        </div>
+            })}
+          </div>
+        )}
       </div>
 
       {/* Sticky footer */}

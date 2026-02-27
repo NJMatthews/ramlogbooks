@@ -72,12 +72,13 @@ export const mockLogbooks: Logbook[] = [
   },
   {
     id: "4",
-    name: "Temperature Excursion Log",
+    name: "pH/Conductivity Meter Daily Use Log",
     location: "Cold Storage B",
     lastEntry: "1 day ago",
     status: "active",
     entryCount: 56,
-    fieldCount: 9,
+    fieldCount: 14,
+    format: "paper",
   },
   {
     id: "5",

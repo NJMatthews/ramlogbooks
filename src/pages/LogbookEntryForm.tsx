@@ -10,7 +10,7 @@ import { SuccessDrawer } from "@/components/ram/SuccessDrawer";
 import { Button } from "@/components/ui/button";
 import { useLogbook } from "@/hooks/useLogbookState";
 import { mockLogbooks } from "@/data/mockLogbooks";
-import { Calendar, Zap, X } from "lucide-react";
+import { Calendar, Zap, Clock, ArrowRight } from "lucide-react";
 
 // Simulated "last entry" values for Quick Fill
 const lastEntryValues: Record<string, string> = {
@@ -22,6 +22,17 @@ const lastEntryValues: Record<string, string> = {
   pressure: "12.5",
   particle05: "3200",
   particle50: "18",
+};
+
+const lastEntryMeta = {
+  operator: "J. Martinez",
+  date: "Feb 26, 2026 12:15 PM",
+  chips: [
+    "Temperature (°C): 21.3 °C",
+    "Humidity (%RH): 45.2 %RH",
+    "Differential Pressure (Pa): 12.5 Pa",
+    "Particle Count (0.5µm): 3200",
+  ],
 };
 
 export default function LogbookEntryForm() {
@@ -42,37 +53,55 @@ export default function LogbookEntryForm() {
 
   return (
     <AppLayout>
-      <HeaderNav type="back" title={logbook?.name ?? "Logbook Entry"} onBack={() => navigate("/")} />
+      <HeaderNav
+        type="back"
+        title={logbook?.name ?? "Logbook Entry"}
+        onBack={() => navigate("/")}
+        rightAction={
+          <button
+            onClick={() => navigate(`/history/${id}`)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-brand-500 text-brand-500 text-sm font-medium hover:bg-brand-100 transition-colors"
+          >
+            <Clock className="h-4 w-4" />
+            History
+          </button>
+        }
+      />
 
       <div className="flex-1 overflow-y-auto px-ram-xl py-ram-xl">
         <div className="mx-auto max-w-[600px] space-y-ram-xl">
           {/* Quick Fill Banner */}
           {!quickFillDismissed && !hasAnyValue && (
-            <div className="flex items-center gap-ram-lg rounded-ram-md border border-brand-200 bg-brand-50 p-ram-lg animate-fade-in">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 shrink-0">
-                <Zap className="h-5 w-5 text-brand-500" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-text-sm font-extrabold text-foreground">Quick Fill from Last Entry</p>
-                <p className="text-text-xs text-gray-500 mt-ram-xxs">
-                  Populate fields with values from your most recent entry
-                </p>
-              </div>
-              <div className="flex items-center gap-ram-sm shrink-0">
-                <Button
-                  onClick={handleQuickFill}
-                  size="sm"
-                  className="rounded-ram-md bg-brand-500 text-white text-text-xs font-extrabold hover:bg-brand-600 h-8 px-ram-lg"
-                >
-                  Apply
-                </Button>
+            <div className="rounded-ram-xl border border-border bg-card p-4 animate-fade-in">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-foreground" />
+                  <span className="text-sm font-extrabold text-foreground">Quick Fill from Previous Entry</span>
+                </div>
                 <button
                   onClick={() => setQuickFillDismissed(true)}
-                  className="p-ram-sm text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  <X className="h-4 w-4" />
+                  Dismiss
                 </button>
               </div>
+              <p className="text-sm text-gray-500 mb-3">
+                {lastEntryMeta.operator} — {lastEntryMeta.date}
+              </p>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {lastEntryMeta.chips.map((chip) => (
+                  <span key={chip} className="text-xs border border-border rounded-full px-3 py-1 text-gray-600 bg-muted">
+                    {chip}
+                  </span>
+                ))}
+              </div>
+              <button
+                onClick={handleQuickFill}
+                className="text-sm font-medium text-brand-500 hover:text-brand-600 flex items-center gap-1 transition-colors"
+              >
+                Apply all previous values
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
             </div>
           )}
 
@@ -118,11 +147,11 @@ export default function LogbookEntryForm() {
       </div>
 
       {/* Sticky footer */}
-      <div className="sticky bottom-0 border-t border-border bg-background px-ram-xl py-ram-xl shrink-0">
+      <div className="sticky bottom-0 border-t border-border bg-card px-ram-xl py-ram-xl shrink-0">
         <div className="mx-auto max-w-[600px]">
           <Button
             onClick={() => dispatch({ type: "OPEN_SIGN" })}
-            className="w-full h-12 rounded-ram-md bg-brand-500 text-white font-extrabold text-text-lg hover:bg-brand-600"
+            className="w-full h-12 rounded-ram-md bg-brand-500 text-white font-extrabold text-lg hover:bg-brand-600"
           >
             Sign & Submit
           </Button>

@@ -11,6 +11,7 @@ import ScanCamera from "./pages/ScanCamera";
 import FormReview from "./pages/FormReview";
 import OfflineQueue from "./pages/OfflineQueue";
 import NotFound from "./pages/NotFound";
+import iPadFrame from "@/assets/ipad-frame.png";
 
 const queryClient = new QueryClient();
 
@@ -40,10 +41,16 @@ const App = () => (
       <Toaster />
       <Sonner />
       <div className="min-h-screen w-full flex items-center justify-center bg-brand-900 p-4 md:p-8">
-        <div className="relative w-full max-w-[874px] h-[1194px] max-h-[95vh] rounded-[36px] border-[12px] border-[hsl(220,13%,22%)] bg-background shadow-2xl overflow-hidden flex flex-col">
-          {/* iPad camera notch */}
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[hsl(220,13%,28%)] z-50" />
-          <div className="flex-1 overflow-hidden">
+        <div className="relative w-full max-w-[900px] max-h-[95vh]" style={{ aspectRatio: '3/4' }}>
+          {/* iPad frame image */}
+          <img
+            src={iPadFrame}
+            alt=""
+            className="absolute inset-0 w-full h-full pointer-events-none z-10"
+            draggable={false}
+          />
+          {/* App content inside the frame */}
+          <div className="absolute inset-[3.8%] top-[2.8%] bottom-[2.8%] rounded-[12px] overflow-hidden bg-background">
             <AppInner />
           </div>
         </div>

@@ -41,7 +41,7 @@ const initialState: LogbookState = {
 function logbookReducer(state: LogbookState, action: Action): LogbookState {
   switch (action.type) {
     case "SELECT_LOGBOOK":
-      return { ...state, selectedLogbookId: action.id, confirmedFields: new Set() };
+      return { ...state, selectedLogbookId: action.id, formFields: formFieldsByLogbook[action.id] ?? cleanRoomFormFields, confirmedFields: new Set() };
     case "UPDATE_FIELD":
       return {
         ...state,

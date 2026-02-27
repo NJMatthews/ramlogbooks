@@ -4,12 +4,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LogbookContext, useLogbookState } from "@/hooks/useLogbookState";
+import { DeviceLocationProvider } from "@/hooks/useDeviceLocation";
 import LogbookList from "./pages/LogbookList";
 import LogbookEntryForm from "./pages/LogbookEntryForm";
 import LogbookHistory from "./pages/LogbookHistory";
 import ScanCamera from "./pages/ScanCamera";
 import FormReview from "./pages/FormReview";
 import OfflineQueue from "./pages/OfflineQueue";
+import LocationSettings from "./pages/LocationSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

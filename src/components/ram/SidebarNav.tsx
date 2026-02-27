@@ -13,6 +13,7 @@ const navItems = [
 export function SidebarNav() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { currentLocation } = useDeviceLocation();
 
   return (
     <aside className="hidden md:flex w-[226px] flex-col border-r border-border bg-card py-ram-3xl h-full overflow-y-auto shrink-0">

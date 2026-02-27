@@ -28,7 +28,7 @@ import { mockScanResults, type ScanField, type FieldType } from "@/data/mockLogb
 const SCAN_STEPS = ["Capture", "Process", "Review", "Layout", "Publish"];
 const FIELD_TYPES: FieldType[] = ["Text", "Number", "Date", "Time", "Text Area", "Toggle"];
 
-type FlowPhase = "tour" | "capture-landing" | "camera" | "processing" | "review" | "review-edit" | "layout" | "publish";
+type FlowPhase = "tour" | "capture-landing" | "camera" | "processing" | "review" | "review-edit" | "layout" | "layout-edit" | "publish";
 
 const PROCESS_STEPS = [
   "Detecting page boundaries...",

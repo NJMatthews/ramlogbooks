@@ -84,7 +84,7 @@ export default function LogbookList() {
           </div>
         </div>
         <div className="flex gap-2 overflow-x-auto">
-          {["Location", "Status", "Date"].map((f) => (
+          {["Status", "Date"].map((f) => (
             <FilterChip
               key={f}
               label={f}

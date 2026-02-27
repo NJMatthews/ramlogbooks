@@ -14,7 +14,7 @@ export function SidebarNav() {
   const navigate = useNavigate();
 
   return (
-    <aside className="hidden md:flex w-[226px] flex-col border-r border-border bg-background py-ram-3xl h-full overflow-y-auto shrink-0">
+    <aside className="hidden md:flex w-[226px] flex-col border-r border-border bg-white py-ram-3xl h-full overflow-y-auto shrink-0">
       <div className="px-ram-xl mb-ram-4xl flex items-center gap-ram-md">
         <div className="w-8 h-8 rounded overflow-hidden">
           <img src={bmLogo} alt="BM Logo" className="w-full h-full object-cover" />

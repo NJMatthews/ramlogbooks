@@ -28,7 +28,7 @@ export interface ScanField {
   confidence: number;
   approved: boolean;
   fieldType: FieldType;
-  colSpan: number;
+  colSpan: 1 | 2;
   rowHeight: "short" | "tall";
 }
 

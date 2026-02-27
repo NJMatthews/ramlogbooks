@@ -6,6 +6,7 @@ export interface Logbook {
   status: "active" | "archived";
   entryCount: number;
   fieldCount: number;
+  format?: "digital" | "paper";
 }
 
 export interface FormField {

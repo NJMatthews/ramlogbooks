@@ -764,64 +764,144 @@ export default function ScanCamera() {
     const isPaper = layoutChoice === "paper";
     return (
       <AppLayout>
-        <HeaderNav type="back" title="Preview: Clean Room Environmental Log" onBack={() => setPhase("layout")} />
+        <HeaderNav type="back" title="Preview: pH/Conductivity Meter Log" onBack={() => setPhase("layout")} />
         <ScanStepper steps={SCAN_STEPS} currentStep={4} className="border-b border-border bg-card" />
 
         <div className="flex-1 overflow-y-auto px-ram-xl py-ram-xl">
-          <div className="mx-auto max-w-[600px]">
-            <div className="rounded-ram-xl border-2 border-dashed border-border bg-card p-ram-xl">
+          <div className="mx-auto max-w-[700px]">
+            <div className={cn(
+              "border-2 border-dashed border-border bg-card overflow-hidden",
+              isPaper ? "rounded-sm" : "rounded-ram-xl p-ram-xl"
+            )}>
               {isPaper ? (
-                /* Paper-matched layout */
+                /* Paper-matched table layout */
                 <>
-                  <p className="text-xs text-gray-400 mb-4">Paper-matched layout</p>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-                    <div>
-                      <label className="text-sm font-extrabold text-foreground block mb-1">Date</label>
-                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">MM/DD/YYYY</div>
-                    </div>
-                    <div>
-                      <label className="text-sm font-extrabold text-foreground block mb-1">Time</label>
-                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">HH:MM</div>
-                    </div>
-                    <div>
-                      <label className="text-sm font-extrabold text-foreground block mb-1">Operator</label>
-                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">Operator name</div>
-                    </div>
-                    <div>
-                      <label className="text-sm font-extrabold text-foreground block mb-1">Room Number</label>
-                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">Room #</div>
-                    </div>
-                    <div>
-                      <label className="text-sm font-extrabold text-foreground block mb-1">Temperature (°C)</label>
-                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">°C</div>
-                    </div>
-                    <div>
-                      <label className="text-sm font-extrabold text-foreground block mb-1">Humidity (%RH)</label>
-                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">%RH</div>
-                    </div>
-                    <div>
-                      <label className="text-sm font-extrabold text-foreground block mb-1">Diff. Pressure (Pa)</label>
-                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">Pa</div>
-                    </div>
+                  <div className="bg-gray-100 border-b-2 border-gray-400 px-4 py-3 text-center">
+                    <p className="text-xs font-extrabold text-foreground uppercase tracking-wider">
+                      Bench Top pH/Conductivity Meter Daily Use Logbook
+                    </p>
+                    <p className="text-[10px] text-gray-500 mt-0.5">Paper-matched layout</p>
                   </div>
-                  <div className="mt-4">
-                    <label className="text-sm font-extrabold text-foreground block mb-1">Observations</label>
-                    <div className="h-24 rounded border border-gray-300 px-3 py-2 text-sm text-gray-400">Enter observations...</div>
+
+                  {/* Equipment ID row */}
+                  <table className="w-full border-collapse">
+                    <tbody>
+                      <tr>
+                        <td className="border border-gray-400 px-2 py-1">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase">Equipment ID Number</span>
+                          <div className="h-7 rounded border border-gray-300 mt-0.5" />
+                        </td>
+                        <td className="border border-gray-400 px-2 py-1">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase">Date</span>
+                          <div className="h-7 rounded border border-gray-300 mt-0.5" />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  {/* pH Buffer section */}
+                  <div className="bg-gray-100 px-3 py-1 border-y border-gray-400">
+                    <span className="text-[10px] font-extrabold text-gray-700 uppercase tracking-wider">pH Buffer Solution Test</span>
                   </div>
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-dashed border-gray-300">
-                    <span className="text-sm font-medium text-foreground">Status</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-10 h-6 rounded-full bg-brand-500 relative">
-                        <div className="absolute right-0.5 top-0.5 w-5 h-5 rounded-full bg-white" />
-                      </div>
-                      <span className="text-sm text-brand-500 font-medium">Pass</span>
-                    </div>
+                  <table className="w-full border-collapse text-[10px]">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="border border-gray-400 px-1.5 py-1 font-bold text-gray-700 text-left">pH Buffer Solution*</th>
+                        <th className="border border-gray-400 px-1.5 py-1 font-bold text-gray-700 text-left">Buffer Solution Lot #</th>
+                        <th className="border border-gray-400 px-1.5 py-1 font-bold text-gray-700 text-left">Exp. Date</th>
+                        <th className="border border-gray-400 px-1.5 py-1 font-bold text-gray-700 text-left">Slope (%)</th>
+                        <th className="border border-gray-400 px-1.5 py-1 font-bold text-gray-700 text-left w-[100px]">
+                          Slope Within Range?<br /><span className="font-normal text-gray-500">(92.0%–102.0%)</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="border border-gray-400 h-8" />
+                        <td className="border border-gray-400 h-8" />
+                        <td className="border border-gray-400 h-8" />
+                        <td className="border border-gray-400 h-8" />
+                        <td className="border border-gray-400 h-8 px-2">
+                          <div className="flex items-center gap-3 text-[10px]">
+                            <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 border border-gray-500 rounded-sm" /> Yes</span>
+                            <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 border border-gray-500 rounded-sm" /> No</span>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  {/* Conductivity section */}
+                  <div className="bg-gray-100 px-3 py-1 border-y border-gray-400">
+                    <span className="text-[10px] font-extrabold text-gray-700 uppercase tracking-wider">Conductivity Standard Test</span>
+                  </div>
+                  <table className="w-full border-collapse text-[10px]">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="border border-gray-400 px-1.5 py-1 font-bold text-gray-700 text-left">Conductivity Std.<br /><span className="font-normal text-gray-500">(Select U/M)</span></th>
+                        <th className="border border-gray-400 px-1.5 py-1 font-bold text-gray-700 text-left">Std. Lot #</th>
+                        <th className="border border-gray-400 px-1.5 py-1 font-bold text-gray-700 text-left">Exp. Date</th>
+                        <th className="border border-gray-400 px-1.5 py-1 font-bold text-gray-700 text-left">Std. Verification<br /><span className="font-normal text-gray-500">(Select U/M)</span></th>
+                        <th className="border border-gray-400 px-1.5 py-1 font-bold text-gray-700 text-left w-[100px]">Within Range?<br /><span className="font-normal text-gray-500">(±5% of std.)</span></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="border border-gray-400 px-1.5 py-1">
+                          <div className="space-y-0.5 text-[10px]">
+                            <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 border border-gray-500 rounded-sm" /> µS/cm</span>
+                            <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 border border-gray-500 rounded-sm" /> mS/cm</span>
+                          </div>
+                        </td>
+                        <td className="border border-gray-400 h-8" />
+                        <td className="border border-gray-400 h-8" />
+                        <td className="border border-gray-400 px-1.5 py-1">
+                          <div className="space-y-0.5 text-[10px]">
+                            <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 border border-gray-500 rounded-sm" /> µS/cm</span>
+                            <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 border border-gray-500 rounded-sm" /> mS/cm</span>
+                          </div>
+                        </td>
+                        <td className="border border-gray-400 h-8 px-2">
+                          <div className="flex items-center gap-3 text-[10px]">
+                            <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 border border-gray-500 rounded-sm" /> Yes</span>
+                            <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 border border-gray-500 rounded-sm" /> No</span>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  {/* Sign-off */}
+                  <table className="w-full border-collapse">
+                    <tbody>
+                      <tr>
+                        <td className="border border-gray-400 px-2 py-1">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase">Performed by — Initials/Date</span>
+                          <div className="h-7 rounded border border-gray-300 mt-0.5" />
+                        </td>
+                        <td className="border border-gray-400 px-2 py-1">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase">Verified by — Initials/Date</span>
+                          <div className="h-7 rounded border border-gray-300 mt-0.5" />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  {/* Comments */}
+                  <div className="px-3 py-2 border-t border-gray-400">
+                    <span className="text-[10px] font-bold text-gray-500 uppercase">Comments</span>
+                    <div className="h-10 border-b-2 border-dotted border-gray-400 mt-1" />
+                  </div>
+
+                  {/* Footnotes */}
+                  <div className="bg-gray-50 border-t border-gray-300 px-3 py-1.5">
+                    <p className="text-[8px] text-gray-500">* Record all digits of the standard value listed on the pH buffer bottle.</p>
                   </div>
                 </>
               ) : (
                 /* Digital optimized layout */
                 <>
-                  <h4 className="text-sm font-extrabold text-foreground mb-1">Entry Info</h4>
+                  <h4 className="text-sm font-extrabold text-foreground mb-1">Equipment Info</h4>
                   <div className="h-px bg-gray-200 mb-4" />
                   <div className="space-y-4">
                     <div>
@@ -829,42 +909,81 @@ export default function ScanCamera() {
                       <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">Auto-filled</div>
                     </div>
                     <div>
-                      <label className="text-sm text-foreground block mb-1">Operator</label>
+                      <label className="text-sm text-foreground block mb-1">Equipment ID Number</label>
+                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">PH-####</div>
+                    </div>
+                  </div>
+
+                  <h4 className="text-sm font-extrabold text-foreground mt-6 mb-1">pH Buffer Test</h4>
+                  <div className="h-px bg-gray-200 mb-4" />
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm text-foreground block mb-1">pH Buffer Solution</label>
+                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">Solution value</div>
+                    </div>
+                    <div>
+                      <label className="text-sm text-foreground block mb-1">Buffer Solution Lot #</label>
+                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">Lot number</div>
+                    </div>
+                    <div>
+                      <label className="text-sm text-foreground block mb-1">Buffer Solution Exp. Date</label>
+                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">MM/DD/YYYY</div>
+                    </div>
+                    <div>
+                      <label className="text-sm text-foreground block mb-1">Slope (%)</label>
+                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">%</div>
+                    </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-dashed border-gray-300">
+                      <span className="text-sm font-medium text-foreground">Slope Within Range? (92.0%–102.0%)</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-10 h-6 rounded-full bg-brand-500 relative">
+                          <div className="absolute right-0.5 top-0.5 w-5 h-5 rounded-full bg-white" />
+                        </div>
+                        <span className="text-sm text-brand-500 font-medium">Yes</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <h4 className="text-sm font-extrabold text-foreground mt-6 mb-1">Conductivity Test</h4>
+                  <div className="h-px bg-gray-200 mb-4" />
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm text-foreground block mb-1">Conductivity Standard (U/M)</label>
+                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">µS/cm or mS/cm</div>
+                    </div>
+                    <div>
+                      <label className="text-sm text-foreground block mb-1">Conductivity Std. Lot #</label>
+                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">Lot number</div>
+                    </div>
+                    <div>
+                      <label className="text-sm text-foreground block mb-1">Conductivity Std. Exp. Date</label>
+                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">MM/DD/YYYY</div>
+                    </div>
+                    <div>
+                      <label className="text-sm text-foreground block mb-1">Std. Verification (U/M)</label>
+                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">µS/cm or mS/cm</div>
+                    </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-dashed border-gray-300">
+                      <span className="text-sm font-medium text-foreground">Std. Verification Within Range? (±5%)</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-10 h-6 rounded-full bg-brand-500 relative">
+                          <div className="absolute right-0.5 top-0.5 w-5 h-5 rounded-full bg-white" />
+                        </div>
+                        <span className="text-sm text-brand-500 font-medium">Yes</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <h4 className="text-sm font-extrabold text-foreground mt-6 mb-1">Sign-off</h4>
+                  <div className="h-px bg-gray-200 mb-4" />
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm text-foreground block mb-1">Performed by Initials/Date</label>
                       <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">From badge auth</div>
                     </div>
                     <div>
-                      <label className="text-sm text-foreground block mb-1">Room</label>
-                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">From logbook scope</div>
-                    </div>
-                  </div>
-
-                  <h4 className="text-sm font-extrabold text-foreground mt-6 mb-1">Environmental Readings</h4>
-                  <div className="h-px bg-gray-200 mb-4" />
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm text-foreground block mb-1">Temperature (°C)</label>
-                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">°C</div>
-                    </div>
-                    <div>
-                      <label className="text-sm text-foreground block mb-1">Humidity (%RH)</label>
-                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">%RH</div>
-                    </div>
-                    <div>
-                      <label className="text-sm text-foreground block mb-1">Differential Pressure (Pa)</label>
-                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">Pa</div>
-                    </div>
-                  </div>
-
-                  <h4 className="text-sm font-extrabold text-foreground mt-6 mb-1">Particle Counts</h4>
-                  <div className="h-px bg-gray-200 mb-4" />
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm text-foreground block mb-1">Particle Count (0.5µm)</label>
-                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">Count</div>
-                    </div>
-                    <div>
-                      <label className="text-sm text-foreground block mb-1">Particle Count (5.0µm)</label>
-                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">Count</div>
+                      <label className="text-sm text-foreground block mb-1">Verified by Initials/Date</label>
+                      <div className="h-10 rounded border border-gray-300 px-3 flex items-center text-sm text-gray-400">Initials / Date</div>
                     </div>
                   </div>
                 </>

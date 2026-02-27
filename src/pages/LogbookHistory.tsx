@@ -19,6 +19,30 @@ export default function LogbookHistory() {
   const navigate = useNavigate();
   const logbook = mockLogbooks.find((l) => l.id === id);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const tableRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    isDragging.current = true;
+    startX.current = e.pageX - (tableRef.current?.offsetLeft ?? 0);
+    scrollLeft.current = tableRef.current?.scrollLeft ?? 0;
+    if (tableRef.current) tableRef.current.style.cursor = "grabbing";
+  }, []);
+
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging.current || !tableRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - tableRef.current.offsetLeft;
+    const walk = x - startX.current;
+    tableRef.current.scrollLeft = scrollLeft.current - walk;
+  }, []);
+
+  const onMouseUp = useCallback(() => {
+    isDragging.current = false;
+    if (tableRef.current) tableRef.current.style.cursor = "grab";
+  }, []);
 
   const entry = mockHistoryEntries[selectedIndex];
 

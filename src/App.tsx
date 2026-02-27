@@ -23,6 +23,7 @@ function AppInner() {
         <Routes>
           <Route path="/" element={<LogbookList />} />
           <Route path="/entry/:id" element={<LogbookEntryForm />} />
+          <Route path="/history/:id" element={<LogbookHistory />} />
           <Route path="/scan" element={<ScanCamera />} />
           <Route path="/review" element={<FormReview />} />
           <Route path="/queue" element={<OfflineQueue />} />

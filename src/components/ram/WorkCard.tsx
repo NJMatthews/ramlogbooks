@@ -43,6 +43,17 @@ export function WorkCard({ logbook, onNewEntry, onViewHistory, showLocationBadge
             <FileText className="h-3 w-3" />
             {logbook.fieldCount} fields
           </span>
+          {logbook.format === "paper" ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-medium text-amber-700">
+              <BookOpen className="h-3 w-3" />
+              Paper
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-medium text-blue-700">
+              <Monitor className="h-3 w-3" />
+              Digital
+            </span>
+          )}
           {showLocationBadge && (
             <span className="inline-flex items-center gap-1 text-text-xs text-success-900">
               <Check className="h-3 w-3" />

@@ -20,11 +20,11 @@ export const mockLocations: DeviceLocation[] = [
 
 export const logbooksByLocation: Record<string, Logbook[]> = {
   "loc-001": [
-    { id: "1", name: "Clean Room Environmental Log", location: "Building 3, Floor 2", lastEntry: "2 hours ago", status: "active", entryCount: 142, fieldCount: 8 },
-    { id: "2", name: "Equipment Calibration Log", location: "Building 3, Floor 2", lastEntry: "Yesterday", status: "active", entryCount: 89, fieldCount: 12 },
-    { id: "3", name: "Water System Monitoring Log", location: "Building 3, Floor 2", lastEntry: "3 hours ago", status: "active", entryCount: 312, fieldCount: 6 },
-    { id: "4", name: "Temperature Excursion Log", location: "Building 3, Floor 2", lastEntry: "1 day ago", status: "active", entryCount: 56, fieldCount: 9 },
-    { id: "5", name: "Batch Weighing Log", location: "Building 3, Floor 2", lastEntry: "30 min ago", status: "active", entryCount: 203, fieldCount: 10 },
+    { id: "1", name: "Clean Room Environmental Log", location: "Building 3, Floor 2", lastEntry: "2 hours ago", status: "active", entryCount: 142, fieldCount: 8, format: "digital" },
+    { id: "2", name: "Equipment Calibration Log", location: "Building 3, Floor 2", lastEntry: "Yesterday", status: "active", entryCount: 89, fieldCount: 12, format: "digital" },
+    { id: "3", name: "Water System Monitoring Log", location: "Building 3, Floor 2", lastEntry: "3 hours ago", status: "active", entryCount: 312, fieldCount: 6, format: "digital" },
+    { id: "4", name: "Temperature Excursion Log", location: "Building 3, Floor 2", lastEntry: "1 day ago", status: "active", entryCount: 56, fieldCount: 9, format: "paper" },
+    { id: "5", name: "Batch Weighing Log", location: "Building 3, Floor 2", lastEntry: "30 min ago", status: "active", entryCount: 203, fieldCount: 10, format: "paper" },
   ],
   "loc-002": [
     { id: "6", name: "pH Calibration Log", location: "Lab A", lastEntry: "1 hour ago", status: "active", entryCount: 45, fieldCount: 6 },

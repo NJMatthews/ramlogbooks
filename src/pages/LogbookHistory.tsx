@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AppLayout } from "@/components/ram/AppLayout";
 import { HeaderNav } from "@/components/ram/HeaderNav";
@@ -19,6 +19,30 @@ export default function LogbookHistory() {
   const navigate = useNavigate();
   const logbook = mockLogbooks.find((l) => l.id === id);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const tableRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    isDragging.current = true;
+    startX.current = e.pageX - (tableRef.current?.offsetLeft ?? 0);
+    scrollLeft.current = tableRef.current?.scrollLeft ?? 0;
+    if (tableRef.current) tableRef.current.style.cursor = "grabbing";
+  }, []);
+
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging.current || !tableRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - tableRef.current.offsetLeft;
+    const walk = x - startX.current;
+    tableRef.current.scrollLeft = scrollLeft.current - walk;
+  }, []);
+
+  const onMouseUp = useCallback(() => {
+    isDragging.current = false;
+    if (tableRef.current) tableRef.current.style.cursor = "grab";
+  }, []);
 
   const entry = mockHistoryEntries[selectedIndex];
 
@@ -122,7 +146,14 @@ export default function LogbookHistory() {
             <h3 className="text-sm font-extrabold text-foreground">Entry Comparison</h3>
             <span className="text-xs text-muted-foreground">{mockHistoryEntries.length} entries</span>
           </div>
-          <div className="flex-1 overflow-auto">
+          <div
+            ref={tableRef}
+            className="flex-1 overflow-auto cursor-grab select-none"
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
+            onMouseLeave={onMouseUp}
+          >
             <table className="min-w-[800px] text-sm border-collapse">
               <thead className="sticky top-0 z-10">
                 <tr className="bg-muted text-left">

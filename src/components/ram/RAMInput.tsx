@@ -77,7 +77,7 @@ export function RAMInput({
     success: "text-foreground",
   }[computedState];
 
-  const bgColor = computedState === "disabled" ? "bg-gray-100" : "bg-background";
+  const bgColor = computedState === "disabled" || computedState === "filled" ? "bg-gray-100" : "bg-card";
 
   return (
     <div className={cn("flex flex-col gap-ram-sm", className)}>

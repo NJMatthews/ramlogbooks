@@ -1,7 +1,8 @@
-import { BookOpen, ScanLine, RefreshCw, Settings } from "lucide-react";
+import { BookOpen, ScanLine, RefreshCw, Settings, MapPin, ClipboardList, Package, ChevronRight } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/logo.png";
+import { useDeviceLocation } from "@/hooks/useDeviceLocation";
 
 const navItems = [
   { label: "My Logbooks", icon: BookOpen, path: "/" },

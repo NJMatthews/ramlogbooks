@@ -677,7 +677,7 @@ export default function ScanCamera() {
           <div className="mx-auto max-w-[600px] flex gap-ram-lg">
             <Button
               variant="outline"
-              onClick={() => setPhase("layout")}
+              onClick={() => setPhase("layout-edit")}
               className="flex-1 h-12 rounded-ram-md border-foreground text-foreground font-extrabold"
             >
               Edit Layout

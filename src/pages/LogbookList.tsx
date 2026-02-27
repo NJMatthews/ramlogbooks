@@ -4,10 +4,11 @@ import { AppLayout } from "@/components/ram/AppLayout";
 import { SearchBar } from "@/components/ram/SearchBar";
 import { FilterChip } from "@/components/ram/FilterChip";
 import { WorkCard } from "@/components/ram/WorkCard";
-import { mockLogbooks } from "@/data/mockLogbooks";
 import { cn } from "@/lib/utils";
 import { useLogbook } from "@/hooks/useLogbookState";
-import { ScanLine } from "lucide-react";
+import { useDeviceLocation } from "@/hooks/useDeviceLocation";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ScanLine, MapPin, Check } from "lucide-react";
 
 export default function LogbookList() {
   const [search, setSearch] = useState("");

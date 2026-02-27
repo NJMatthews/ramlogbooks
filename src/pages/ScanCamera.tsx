@@ -20,6 +20,8 @@ import {
   Columns2,
   RectangleHorizontal,
   ArrowUpDown,
+  Minus,
+  Type,
 } from "lucide-react";
 import { ConfidenceChip } from "@/components/ram/ConfidenceChip";
 import { cn } from "@/lib/utils";
@@ -49,6 +51,14 @@ export default function ScanCamera() {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dropTarget, setDropTarget] = useState<number | null>(null);
   const dragCounter = useRef(0);
+  const [gridColumns, setGridColumns] = useState(4);
+  
+  type DigitalLayoutItem =
+    | { type: "field"; fieldId: string }
+    | { type: "section"; id: string; title: string };
+  const [digitalLayout, setDigitalLayout] = useState<DigitalLayoutItem[]>(() =>
+    mockScanResults.map((f) => ({ type: "field" as const, fieldId: f.id }))
+  );
 
   // Processing animation
   useEffect(() => {
@@ -448,187 +458,379 @@ export default function ScanCamera() {
     );
   }
 
-  // Layout Edit - Form Builder
+  // Layout Edit - Form Builder (branched by layoutChoice)
   if (phase === "layout-edit") {
     const spacingClass = layoutSpacing === "compact" ? "gap-2" : layoutSpacing === "relaxed" ? "gap-6" : "gap-4";
 
-    const handleDragStart = (index: number) => {
-      setDragIndex(index);
-    };
+    const handleDragStart = (index: number) => setDragIndex(index);
+    const handleDragEnter = (index: number) => { dragCounter.current++; setDropTarget(index); };
+    const handleDragLeave = () => { dragCounter.current--; if (dragCounter.current === 0) setDropTarget(null); };
+    const handleDragEnd = () => { setDragIndex(null); setDropTarget(null); dragCounter.current = 0; };
 
-    const handleDragEnter = (index: number) => {
-      dragCounter.current++;
-      setDropTarget(index);
-    };
+    // Paper mode: table grid editor
+    if (layoutChoice === "paper") {
+      const handleFieldDrop = (targetIndex: number) => {
+        if (dragIndex === null || dragIndex === targetIndex) { handleDragEnd(); return; }
+        setFields((prev) => {
+          const updated = [...prev];
+          const [moved] = updated.splice(dragIndex, 1);
+          updated.splice(targetIndex > dragIndex ? targetIndex - 1 : targetIndex, 0, moved);
+          return updated;
+        });
+        handleDragEnd();
+      };
 
-    const handleDragLeave = () => {
-      dragCounter.current--;
-      if (dragCounter.current === 0) {
-        setDropTarget(null);
-      }
-    };
+      const updateColSpan = (id: string, span: number) => {
+        setFields((prev) =>
+          prev.map((f) => (f.id === id ? { ...f, colSpan: Math.min(span, gridColumns) as 1 | 2 } : f))
+        );
+      };
 
-    const handleDrop = (targetIndex: number) => {
-      if (dragIndex === null || dragIndex === targetIndex) {
-        setDragIndex(null);
-        setDropTarget(null);
-        dragCounter.current = 0;
-        return;
-      }
-      setFields((prev) => {
+      return (
+        <AppLayout>
+          <HeaderNav type="back" title="Edit Table Layout" onBack={() => setPhase("publish")} />
+          <ScanStepper steps={SCAN_STEPS} currentStep={3} className="border-b border-border bg-card" />
+
+          <div className="flex-1 overflow-y-auto px-ram-xl py-ram-xl">
+            <div className="mx-auto max-w-[700px]">
+              {/* Controls row */}
+              <div className="flex items-center justify-between mb-ram-xl flex-wrap gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-extrabold text-foreground">Columns</span>
+                  <div className="flex items-center gap-1 rounded-ram-md border border-border overflow-hidden">
+                    <button
+                      onClick={() => setGridColumns((c) => Math.max(2, c - 1))}
+                      className="px-2 py-1.5 text-sm text-foreground hover:bg-muted transition-colors"
+                    >
+                      <Minus className="h-3.5 w-3.5" />
+                    </button>
+                    <span className="px-3 py-1.5 text-sm font-extrabold text-foreground bg-muted min-w-[32px] text-center">
+                      {gridColumns}
+                    </span>
+                    <button
+                      onClick={() => setGridColumns((c) => Math.min(8, c + 1))}
+                      className="px-2 py-1.5 text-sm text-foreground hover:bg-muted transition-colors"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-extrabold text-foreground">Spacing</span>
+                  <div className="flex gap-0.5 rounded-ram-md border border-border overflow-hidden">
+                    {(["compact", "normal", "relaxed"] as const).map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => setLayoutSpacing(s)}
+                        className={cn(
+                          "px-2.5 py-1.5 text-xs font-medium capitalize transition-colors",
+                          layoutSpacing === s
+                            ? "bg-brand-500 text-white"
+                            : "bg-card text-foreground hover:bg-muted"
+                        )}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Table grid */}
+              <div className="rounded-ram-md border border-border overflow-hidden bg-card">
+                {/* Column headers */}
+                <div
+                  className="grid border-b border-border bg-muted"
+                  style={{ gridTemplateColumns: `repeat(${gridColumns}, 1fr)` }}
+                >
+                  {Array.from({ length: gridColumns }, (_, i) => (
+                    <div key={i} className="px-2 py-1.5 text-xs font-medium text-muted-foreground text-center border-r border-border last:border-r-0">
+                      Col {i + 1}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Field rows */}
+                <div className={cn("p-2", spacingClass === "gap-2" ? "space-y-1" : spacingClass === "gap-6" ? "space-y-3" : "space-y-2")}>
+                  {fields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      draggable
+                      onDragStart={() => handleDragStart(index)}
+                      onDragEnter={() => handleDragEnter(index)}
+                      onDragLeave={handleDragLeave}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => handleFieldDrop(index)}
+                      onDragEnd={handleDragEnd}
+                      className="relative"
+                    >
+                      {/* Drop indicator */}
+                      {dropTarget === index && dragIndex !== null && dragIndex !== index && (
+                        <div className="absolute -top-1 left-0 right-0 h-0.5 bg-brand-500 rounded-full z-10" />
+                      )}
+                      <div
+                        className={cn(
+                          "grid items-center rounded-ram-xs border transition-all cursor-grab active:cursor-grabbing",
+                          dragIndex === index ? "opacity-40 scale-[0.98] border-brand-500" : "border-border hover:border-brand-300"
+                        )}
+                        style={{ gridTemplateColumns: `repeat(${gridColumns}, 1fr)` }}
+                      >
+                        {/* The field cell spanning its colSpan */}
+                        <div
+                          className="flex items-center gap-1.5 px-2 py-2 min-h-[44px]"
+                          style={{ gridColumn: `span ${Math.min(field.colSpan, gridColumns)}` }}
+                        >
+                          <GripVertical className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          <input
+                            type="text"
+                            value={field.name}
+                            onChange={(e) => updateFieldName(field.id, e.target.value)}
+                            placeholder="Field name"
+                            className="flex-1 text-xs font-extrabold text-foreground bg-transparent outline-none min-w-0 border-b border-transparent focus:border-brand-500"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <span className={cn(
+                            "shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium",
+                            "bg-brand-100 text-brand-500"
+                          )}>
+                            {field.fieldType}
+                          </span>
+                        </div>
+                        {/* Empty cells to visualize the remaining columns */}
+                        {Array.from({ length: gridColumns - Math.min(field.colSpan, gridColumns) }, (_, i) => (
+                          <div key={i} className="border-l border-dashed border-border h-full min-h-[44px]" />
+                        ))}
+                      </div>
+
+                      {/* Row controls */}
+                      <div className="flex items-center gap-2 mt-1 ml-6">
+                        <span className="text-[10px] text-muted-foreground">Span:</span>
+                        {Array.from({ length: gridColumns }, (_, i) => (
+                          <button
+                            key={i}
+                            onClick={() => updateColSpan(field.id, i + 1)}
+                            className={cn(
+                              "w-5 h-5 rounded text-[10px] font-medium transition-colors",
+                              field.colSpan === i + 1
+                                ? "bg-brand-500 text-white"
+                                : "bg-muted text-muted-foreground hover:bg-accent"
+                            )}
+                          >
+                            {i + 1}
+                          </button>
+                        ))}
+
+                        <div className="flex-1" />
+
+                        <button
+                          onClick={() => {
+                            setFields((prev) =>
+                              prev.map((f) => (f.id === field.id ? { ...f, rowHeight: f.rowHeight === "short" ? "tall" : "short" } : f))
+                            );
+                          }}
+                          className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-0.5"
+                        >
+                          <ArrowUpDown className="h-3 w-3" />
+                          {field.rowHeight === "short" ? "Short" : "Tall"}
+                        </button>
+
+                        <button
+                          onClick={() => removeField(field.id)}
+                          className="text-muted-foreground hover:text-destructive p-0.5"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add field */}
+                <button
+                  onClick={addField}
+                  className="w-full flex items-center justify-center gap-2 py-3 border-t border-dashed border-border text-brand-500 text-sm font-medium hover:bg-muted/50 transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Field
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="sticky bottom-0 border-t border-border bg-card px-ram-xl py-ram-xl shrink-0">
+            <div className="mx-auto max-w-[700px]">
+              <Button
+                onClick={() => setPhase("publish")}
+                className="w-full h-12 rounded-ram-md bg-brand-500 text-white font-extrabold hover:bg-brand-600 text-base"
+              >
+                Done
+              </Button>
+            </div>
+          </div>
+        </AppLayout>
+      );
+    }
+
+    // Digital mode: vertical list with section headers
+    const handleDigitalDrop = (targetIndex: number) => {
+      if (dragIndex === null || dragIndex === targetIndex) { handleDragEnd(); return; }
+      setDigitalLayout((prev) => {
         const updated = [...prev];
         const [moved] = updated.splice(dragIndex, 1);
         updated.splice(targetIndex > dragIndex ? targetIndex - 1 : targetIndex, 0, moved);
         return updated;
       });
-      setDragIndex(null);
-      setDropTarget(null);
-      dragCounter.current = 0;
+      handleDragEnd();
     };
 
-    const handleDragEnd = () => {
-      setDragIndex(null);
-      setDropTarget(null);
-      dragCounter.current = 0;
+    const addDigitalSection = () => {
+      setDigitalLayout((prev) => [
+        ...prev,
+        { type: "section", id: `sec-${Date.now()}`, title: "New Section" },
+      ]);
     };
 
-    const toggleColSpan = (id: string) => {
-      setFields((prev) =>
-        prev.map((f) => (f.id === id ? { ...f, colSpan: f.colSpan === 1 ? 2 : 1 } : f))
-      );
+    const addDigitalField = () => {
+      const newId = `s${Date.now()}`;
+      const newField: ScanField = {
+        id: newId, name: "", value: "", confidence: 100, approved: false,
+        fieldType: "Text", colSpan: 1, rowHeight: "short",
+      };
+      setFields((prev) => [...prev, newField]);
+      setDigitalLayout((prev) => [...prev, { type: "field", fieldId: newId }]);
     };
 
-    const toggleRowHeight = (id: string) => {
-      setFields((prev) =>
-        prev.map((f) => (f.id === id ? { ...f, rowHeight: f.rowHeight === "short" ? "tall" : "short" } : f))
+    const removeDigitalItem = (index: number) => {
+      const item = digitalLayout[index];
+      if (item.type === "field") {
+        setFields((prev) => prev.filter((f) => f.id !== item.fieldId));
+      }
+      setDigitalLayout((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const updateSectionTitle = (id: string, title: string) => {
+      setDigitalLayout((prev) =>
+        prev.map((item) =>
+          item.type === "section" && item.id === id ? { ...item, title } : item
+        )
       );
     };
 
     return (
       <AppLayout>
-        <HeaderNav type="back" title="Edit Layout" onBack={() => setPhase("publish")} />
+        <HeaderNav type="back" title="Edit Digital Layout" onBack={() => setPhase("publish")} />
         <ScanStepper steps={SCAN_STEPS} currentStep={3} className="border-b border-border bg-card" />
 
         <div className="flex-1 overflow-y-auto px-ram-xl py-ram-xl">
-          <div className="mx-auto max-w-[600px]">
-            {/* Spacing control */}
-            <div className="flex items-center justify-between mb-ram-xl">
-              <span className="text-sm font-extrabold text-foreground">Spacing</span>
-              <div className="flex gap-1 rounded-ram-md border border-border overflow-hidden">
-                {(["compact", "normal", "relaxed"] as const).map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setLayoutSpacing(s)}
-                    className={cn(
-                      "px-3 py-1.5 text-xs font-medium capitalize transition-colors",
-                      layoutSpacing === s
-                        ? "bg-brand-500 text-white"
-                        : "bg-card text-foreground hover:bg-muted"
-                    )}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div className="mx-auto max-w-[600px] space-y-2">
+            {digitalLayout.map((item, index) => {
+              const isSection = item.type === "section";
+              const field = !isSection ? fields.find((f) => f.id === item.fieldId) : null;
 
-            {/* Draggable grid */}
-            <div className={cn("grid grid-cols-2", spacingClass)}>
-              {fields.map((field, index) => (
+              return (
                 <div
-                  key={field.id}
+                  key={isSection ? item.id : item.fieldId}
                   draggable
                   onDragStart={() => handleDragStart(index)}
                   onDragEnter={() => handleDragEnter(index)}
                   onDragLeave={handleDragLeave}
                   onDragOver={(e) => e.preventDefault()}
-                  onDrop={() => handleDrop(index)}
+                  onDrop={() => handleDigitalDrop(index)}
                   onDragEnd={handleDragEnd}
-                  className={cn(
-                    "relative rounded-ram-md border bg-card p-3 transition-all cursor-grab active:cursor-grabbing",
-                    field.colSpan === 2 ? "col-span-2" : "col-span-1",
-                    dragIndex === index ? "opacity-40 scale-95" : "opacity-100",
-                    dropTarget === index && dragIndex !== index
-                      ? "ring-2 ring-brand-500 ring-offset-1"
-                      : "border-border"
-                  )}
+                  className="relative"
                 >
-                  {/* Drag handle + field name */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <input
-                      type="text"
-                      value={field.name}
-                      onChange={(e) => updateFieldName(field.id, e.target.value)}
-                      placeholder="Field name"
-                      className="flex-1 text-sm font-extrabold text-foreground bg-transparent outline-none border-b border-transparent focus:border-brand-500 transition-colors"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <button
-                      onClick={() => removeField(field.id)}
-                      className="text-muted-foreground hover:text-destructive p-0.5 transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  {/* Field type badge */}
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {FIELD_TYPES.map((t) => (
-                      <button
-                        key={t}
-                        onClick={() => updateFieldType(field.id, t)}
-                        className={cn(
-                          "px-2 py-0.5 rounded text-xs font-medium transition-colors",
-                          field.fieldType === t
-                            ? "bg-brand-500 text-white"
-                            : "bg-muted text-muted-foreground hover:bg-accent"
-                        )}
-                      >
-                        {t}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Width + Height controls */}
-                  <div className="flex items-center gap-3 border-t border-border pt-2">
-                    <button
-                      onClick={() => toggleColSpan(field.id)}
-                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                      title={field.colSpan === 1 ? "Half width" : "Full width"}
-                    >
-                      {field.colSpan === 1 ? (
-                        <><Columns2 className="h-3.5 w-3.5" /> Half</>
-                      ) : (
-                        <><RectangleHorizontal className="h-3.5 w-3.5" /> Full</>
-                      )}
-                    </button>
-                    <button
-                      onClick={() => toggleRowHeight(field.id)}
-                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                      title={field.rowHeight === "short" ? "Short" : "Tall"}
-                    >
-                      <ArrowUpDown className="h-3.5 w-3.5" />
-                      {field.rowHeight === "short" ? "Short" : "Tall"}
-                    </button>
-                  </div>
-
-                  {/* Height preview indicator */}
-                  {field.rowHeight === "tall" && (
-                    <div className="mt-2 h-10 rounded border border-dashed border-muted-foreground/30 flex items-center justify-center">
-                      <span className="text-xs text-muted-foreground">Tall field</span>
-                    </div>
+                  {/* Drop indicator */}
+                  {dropTarget === index && dragIndex !== null && dragIndex !== index && (
+                    <div className="absolute -top-1 left-0 right-0 h-0.5 bg-brand-500 rounded-full z-10" />
                   )}
-                </div>
-              ))}
 
-              {/* Add field button */}
+                  {isSection ? (
+                    /* Section header */
+                    <div
+                      className={cn(
+                        "flex items-center gap-2 rounded-ram-md border-2 border-dashed px-3 py-2.5 cursor-grab active:cursor-grabbing transition-all",
+                        dragIndex === index ? "opacity-40 scale-[0.98] border-brand-500" : "border-brand-300 bg-brand-100/50"
+                      )}
+                    >
+                      <GripVertical className="h-4 w-4 text-brand-500 shrink-0" />
+                      <Type className="h-4 w-4 text-brand-500 shrink-0" />
+                      <input
+                        type="text"
+                        value={item.title}
+                        onChange={(e) => updateSectionTitle(item.id, e.target.value)}
+                        className="flex-1 text-sm font-extrabold text-brand-500 bg-transparent outline-none border-b border-transparent focus:border-brand-500"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <button
+                        onClick={() => removeDigitalItem(index)}
+                        className="text-brand-400 hover:text-destructive p-0.5"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : field ? (
+                    /* Field card */
+                    <div
+                      className={cn(
+                        "flex items-center gap-2 rounded-ram-md border bg-card px-3 py-3 cursor-grab active:cursor-grabbing transition-all",
+                        dragIndex === index ? "opacity-40 scale-[0.98] border-brand-500" : "border-border"
+                      )}
+                    >
+                      <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <input
+                          type="text"
+                          value={field.name}
+                          onChange={(e) => updateFieldName(field.id, e.target.value)}
+                          placeholder="Field name"
+                          className="w-full text-sm font-extrabold text-foreground bg-transparent outline-none border-b border-transparent focus:border-brand-500"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {FIELD_TYPES.map((t) => (
+                            <button
+                              key={t}
+                              onClick={() => updateFieldType(field.id, t)}
+                              className={cn(
+                                "px-2 py-0.5 rounded text-[10px] font-medium transition-colors",
+                                field.fieldType === t
+                                  ? "bg-brand-500 text-white"
+                                  : "bg-muted text-muted-foreground hover:bg-accent"
+                              )}
+                            >
+                              {t}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => removeDigitalItem(index)}
+                        className="text-muted-foreground hover:text-destructive p-0.5 shrink-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+
+            {/* Add buttons */}
+            <div className="flex gap-3 pt-2">
               <button
-                onClick={addField}
-                className="col-span-2 flex items-center justify-center gap-2 py-4 rounded-ram-md border-2 border-dashed border-muted-foreground/30 text-brand-500 font-medium hover:border-brand-500 transition-colors"
+                onClick={addDigitalField}
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-ram-md border-2 border-dashed border-muted-foreground/30 text-brand-500 text-sm font-medium hover:border-brand-500 transition-colors"
               >
                 <Plus className="h-4 w-4" />
                 Add Field
+              </button>
+              <button
+                onClick={addDigitalSection}
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-ram-md border-2 border-dashed border-brand-300 text-brand-500 text-sm font-medium hover:border-brand-500 transition-colors"
+              >
+                <Type className="h-4 w-4" />
+                Add Section
               </button>
             </div>
           </div>

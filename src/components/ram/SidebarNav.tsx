@@ -14,7 +14,7 @@ export function SidebarNav() {
   const navigate = useNavigate();
 
   return (
-    <aside className="hidden md:flex w-[226px] flex-col border-r border-border bg-background py-ram-3xl h-full overflow-y-auto shrink-0">
+    <aside className="hidden md:flex w-[226px] flex-col border-r border-border bg-card py-ram-3xl h-full overflow-y-auto shrink-0">
       <div className="px-ram-xl mb-ram-4xl flex items-center gap-ram-md">
         <div className="w-8 h-8 rounded bg-brand-500 flex items-center justify-center overflow-hidden">
           <img src={logo} alt="RAM Logo" className="w-full h-full object-cover" />

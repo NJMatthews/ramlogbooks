@@ -66,8 +66,10 @@ function logbookReducer(state: LogbookState, action: Action): LogbookState {
       return { ...state, showSuccess: false };
     case "TOGGLE_OFFLINE":
       return { ...state, isOffline: !state.isOffline };
-    case "RESET_FORM":
-      return { ...state, formFields: cleanRoomFormFields, confirmedFields: new Set(), showSuccess: false };
+    case "RESET_FORM": {
+      const fields = formFieldsByLogbook[state.selectedLogbookId ?? ""] ?? cleanRoomFormFields;
+      return { ...state, formFields: fields, confirmedFields: new Set(), showSuccess: false };
+    }
     default:
       return state;
   }

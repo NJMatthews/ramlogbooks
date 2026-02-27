@@ -20,9 +20,9 @@ function AppInner() {
   const { state, dispatch } = useLogbookState();
 
   return (
-    <DeviceLocationProvider>
-      <LogbookContext.Provider value={{ state, dispatch }}>
-        <BrowserRouter>
+    <BrowserRouter>
+      <DeviceLocationProvider>
+        <LogbookContext.Provider value={{ state, dispatch }}>
           <Routes>
             <Route path="/" element={<LogbookList />} />
             <Route path="/entry/:id" element={<LogbookEntryForm />} />
@@ -33,9 +33,9 @@ function AppInner() {
             <Route path="/settings/location" element={<LocationSettings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </LogbookContext.Provider>
-    </DeviceLocationProvider>
+        </LogbookContext.Provider>
+      </DeviceLocationProvider>
+    </BrowserRouter>
   );
 }
 

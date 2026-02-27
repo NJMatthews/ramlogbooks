@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { MapPin, Clock, FileText, History, PlusCircle, Check } from "lucide-react";
+import { MapPin, Clock, FileText, History, PlusCircle, Check, Monitor, BookOpen } from "lucide-react";
 import type { Logbook } from "@/data/mockLogbooks";
 
 interface WorkCardProps {

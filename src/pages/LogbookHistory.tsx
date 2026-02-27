@@ -30,85 +30,143 @@ export default function LogbookHistory() {
         onBack={() => navigate("/")}
       />
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left: Entry list */}
-        <div className="w-[240px] shrink-0 border-r border-border bg-card overflow-y-auto">
-          <div className="px-4 py-3 border-b border-border">
-            <h3 className="text-sm font-extrabold text-foreground">All Entries ({mockHistoryEntries.length})</h3>
-          </div>
-          {mockHistoryEntries.map((e, i) => (
-            <button
-              key={e.id}
-              onClick={() => setSelectedIndex(i)}
-              className={cn(
-                "w-full text-left px-4 py-3 border-l-[3px] border-b border-border transition-colors",
-                i === selectedIndex
-                  ? "border-l-brand-500 bg-brand-50"
-                  : "border-l-transparent hover:bg-muted"
-              )}
-            >
-              <p className="text-sm font-extrabold text-foreground">{e.date} {e.time}</p>
-              <p className="text-xs text-gray-500 mt-0.5">{e.operator}</p>
-              <span className="inline-block mt-1.5 text-xs font-medium text-success-400 bg-success-100 px-2 py-0.5 rounded">
-                Signed
-              </span>
-            </button>
-          ))}
-        </div>
-
-        {/* Right: Entry detail */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="px-6 py-5 animate-fade-in" key={entry.id}>
-            <div className="max-w-[420px] space-y-4">
-              {/* Date/Operator header */}
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Calendar className="h-4 w-4" />
-                    <span>{entry.date} {entry.time}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <User className="h-4 w-4" />
-                    <span>{entry.operator}</span>
-                  </div>
-                </div>
-                <span className="text-sm font-medium text-success-400 bg-success-100 px-2.5 py-1 rounded">
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* TOP HALF — Detail view */}
+        <div className="flex h-1/2 min-h-0 border-b border-border">
+          {/* Left: Entry list */}
+          <div className="w-[220px] shrink-0 border-r border-border bg-card overflow-y-auto">
+            <div className="px-4 py-3 border-b border-border">
+              <h3 className="text-sm font-extrabold text-foreground">All Entries ({mockHistoryEntries.length})</h3>
+            </div>
+            {mockHistoryEntries.map((e, i) => (
+              <button
+                key={e.id}
+                onClick={() => setSelectedIndex(i)}
+                className={cn(
+                  "w-full text-left px-4 py-2.5 border-l-[3px] border-b border-border transition-colors",
+                  i === selectedIndex
+                    ? "border-l-brand-500 bg-brand-50"
+                    : "border-l-transparent hover:bg-muted"
+                )}
+              >
+                <p className="text-sm font-extrabold text-foreground">{e.date} {e.time}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{e.operator}</p>
+                <span className="inline-block mt-1 text-xs font-medium text-success-400 bg-success-100 px-2 py-0.5 rounded">
                   Signed
                 </span>
-              </div>
+              </button>
+            ))}
+          </div>
 
-              {/* Field cards */}
-              <HistoryField label="TEMPERATURE (°C)" value={entry.temperature} unit="°C" />
-              <HistoryField label="HUMIDITY (%RH)" value={entry.humidity} unit="%RH" />
-              <HistoryField label="DIFFERENTIAL PRESSURE (PA)" value={entry.pressure} unit="Pa" />
-              <HistoryField label="PARTICLE COUNT (0.5MM)" value={entry.particle05} />
-              <HistoryField label="PARTICLE COUNT (5.0MM)" value={entry.particle50} />
-              <HistoryField label="OBSERVATIONS" value={entry.observations || "—"} />
-              <HistoryField label="STATUS" value={entry.status === "pass" ? "Pass" : "Fail"} />
+          {/* Right: Entry detail */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="px-6 py-4 animate-fade-in" key={entry.id}>
+              <div className="max-w-[420px] space-y-3">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span>{entry.date} {entry.time}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <User className="h-4 w-4" />
+                      <span>{entry.operator}</span>
+                    </div>
+                  </div>
+                  <span className="text-sm font-medium text-success-400 bg-success-100 px-2.5 py-1 rounded">
+                    Signed
+                  </span>
+                </div>
 
-              {/* Entry navigation */}
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  onClick={() => setSelectedIndex((i) => Math.min(i + 1, mockHistoryEntries.length - 1))}
-                  disabled={selectedIndex >= mockHistoryEntries.length - 1}
-                  className="flex items-center gap-1 text-sm text-brand-500 disabled:text-gray-300"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Previous Entry
-                </button>
-                <span className="text-sm text-gray-500 px-2">
-                  {selectedIndex + 1} / {mockHistoryEntries.length}
-                </span>
-                <button
-                  onClick={() => setSelectedIndex((i) => Math.max(i - 1, 0))}
-                  disabled={selectedIndex <= 0}
-                  className="flex items-center gap-1 text-sm font-extrabold text-brand-500 disabled:text-gray-300"
-                >
-                  Next Entry
-                  <ChevronRight className="h-4 w-4" />
-                </button>
+                <div className="grid grid-cols-2 gap-2">
+                  <HistoryField label="TEMPERATURE (°C)" value={entry.temperature} unit="°C" />
+                  <HistoryField label="HUMIDITY (%RH)" value={entry.humidity} unit="%RH" />
+                  <HistoryField label="DIFF. PRESSURE (PA)" value={entry.pressure} unit="Pa" />
+                  <HistoryField label="PARTICLE (0.5µm)" value={entry.particle05} />
+                  <HistoryField label="PARTICLE (5.0µm)" value={entry.particle50} />
+                  <HistoryField label="STATUS" value={entry.status === "pass" ? "Pass" : "Fail"} />
+                </div>
+                {entry.observations && (
+                  <HistoryField label="OBSERVATIONS" value={entry.observations} />
+                )}
+
+                <div className="flex items-center justify-end gap-2 pt-1">
+                  <button
+                    onClick={() => setSelectedIndex((i) => Math.min(i + 1, mockHistoryEntries.length - 1))}
+                    disabled={selectedIndex >= mockHistoryEntries.length - 1}
+                    className="flex items-center gap-1 text-sm text-brand-500 disabled:text-muted-foreground"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </button>
+                  <span className="text-sm text-muted-foreground px-2">
+                    {selectedIndex + 1} / {mockHistoryEntries.length}
+                  </span>
+                  <button
+                    onClick={() => setSelectedIndex((i) => Math.max(i - 1, 0))}
+                    disabled={selectedIndex <= 0}
+                    className="flex items-center gap-1 text-sm font-extrabold text-brand-500 disabled:text-muted-foreground"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* BOTTOM HALF — Comparison table */}
+        <div className="h-1/2 min-h-0 flex flex-col overflow-hidden bg-card">
+          <div className="px-4 py-3 border-b border-border shrink-0 flex items-center justify-between">
+            <h3 className="text-sm font-extrabold text-foreground">Entry Comparison</h3>
+            <span className="text-xs text-muted-foreground">{mockHistoryEntries.length} entries</span>
+          </div>
+          <div className="flex-1 overflow-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead className="sticky top-0 z-10">
+                <tr className="bg-muted text-left">
+                  <th className="px-3 py-2 font-extrabold text-muted-foreground text-xs whitespace-nowrap border-b border-border">Date / Time</th>
+                  <th className="px-3 py-2 font-extrabold text-muted-foreground text-xs whitespace-nowrap border-b border-border">Operator</th>
+                  <th className="px-3 py-2 font-extrabold text-muted-foreground text-xs whitespace-nowrap border-b border-border">Temp (°C)</th>
+                  <th className="px-3 py-2 font-extrabold text-muted-foreground text-xs whitespace-nowrap border-b border-border">Humidity (%)</th>
+                  <th className="px-3 py-2 font-extrabold text-muted-foreground text-xs whitespace-nowrap border-b border-border">Pressure (Pa)</th>
+                  <th className="px-3 py-2 font-extrabold text-muted-foreground text-xs whitespace-nowrap border-b border-border">0.5µm</th>
+                  <th className="px-3 py-2 font-extrabold text-muted-foreground text-xs whitespace-nowrap border-b border-border">5.0µm</th>
+                  <th className="px-3 py-2 font-extrabold text-muted-foreground text-xs whitespace-nowrap border-b border-border">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {mockHistoryEntries.map((e, i) => (
+                  <tr
+                    key={e.id}
+                    onClick={() => setSelectedIndex(i)}
+                    className={cn(
+                      "cursor-pointer transition-colors border-b border-border",
+                      i === selectedIndex
+                        ? "bg-brand-50"
+                        : "hover:bg-muted/50"
+                    )}
+                  >
+                    <td className="px-3 py-2 whitespace-nowrap font-medium text-foreground">{e.date} {e.time}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-muted-foreground">{e.operator}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-foreground font-medium">{e.temperature}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-foreground font-medium">{e.humidity}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-foreground font-medium">{e.pressure}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-foreground font-medium">{e.particle05}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-foreground font-medium">{e.particle50}</td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <span className={cn(
+                        "text-xs font-medium px-2 py-0.5 rounded",
+                        e.status === "pass" ? "text-success-400 bg-success-100" : "text-error-600 bg-red-100"
+                      )}>
+                        {e.status === "pass" ? "Pass" : "Fail"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -118,11 +176,11 @@ export default function LogbookHistory() {
 
 function HistoryField({ label, value, unit }: { label: string; value: string; unit?: string }) {
   return (
-    <div className="rounded-ram-xl border border-border bg-card px-4 py-3">
-      <p className="text-[11px] font-extrabold text-gray-500 tracking-wider uppercase mb-1">{label}</p>
-      <p className="text-lg font-extrabold text-foreground">
+    <div className="rounded-ram-xs border border-border bg-background px-3 py-2">
+      <p className="text-[10px] font-extrabold text-muted-foreground tracking-wider uppercase mb-0.5">{label}</p>
+      <p className="text-base font-extrabold text-foreground">
         {value}
-        {unit && <span className="text-sm font-medium text-gray-500 ml-1">{unit}</span>}
+        {unit && <span className="text-xs font-medium text-muted-foreground ml-1">{unit}</span>}
       </p>
     </div>
   );

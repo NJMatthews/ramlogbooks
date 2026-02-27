@@ -70,7 +70,7 @@ export default function ScanCamera() {
     phase === "capture-landing" || phase === "camera" ? 0
     : phase === "processing" ? 1
     : phase === "review" || phase === "review-edit" ? 2
-    : phase === "layout" ? 3
+    : phase === "layout" || phase === "layout-edit" ? 3
     : phase === "publish" ? 4
     : 0;
 

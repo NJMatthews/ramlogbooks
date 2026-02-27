@@ -9,29 +9,31 @@ interface ScanStepperProps {
 
 export function ScanStepper({ steps, currentStep, className }: ScanStepperProps) {
   return (
-    <div className={cn("flex items-center gap-ram-sm w-full px-ram-xl py-ram-lg", className)}>
+    <div className={cn("flex items-center justify-center w-full px-ram-xl py-ram-lg", className)}>
       {steps.map((step, i) => {
         const completed = i < currentStep;
         const active = i === currentStep;
         return (
-          <div key={step} className="flex items-center flex-1 last:flex-none">
-            <div className="flex flex-col items-center gap-ram-xxs">
+          <div key={step} className="flex items-center">
+            <div className="flex flex-col items-center gap-1">
               <div
                 className={cn(
                   "flex h-8 w-8 items-center justify-center rounded-full text-text-xs font-extrabold transition-colors shrink-0",
                   completed
-                    ? "bg-brand-500 text-white"
+                    ? "bg-success-400 text-white"
                     : active
-                    ? "bg-brand-200 text-brand-500 ring-2 ring-brand-500"
-                    : "bg-gray-200 text-gray-500"
+                    ? "bg-brand-500 text-white"
+                    : "bg-gray-300 text-gray-600"
                 )}
               >
                 {completed ? <Check className="h-4 w-4" /> : i + 1}
               </div>
               <span
                 className={cn(
-                  "text-text-xs text-center whitespace-nowrap",
-                  active ? "text-brand-500 font-medium" : "text-gray-500"
+                  "text-[11px] text-center whitespace-nowrap",
+                  completed ? "text-success-400 font-medium"
+                  : active ? "text-brand-500 font-extrabold"
+                  : "text-gray-500"
                 )}
               >
                 {step}
@@ -40,8 +42,8 @@ export function ScanStepper({ steps, currentStep, className }: ScanStepperProps)
             {i < steps.length - 1 && (
               <div
                 className={cn(
-                  "flex-1 h-0.5 mx-ram-sm mt-[-16px]",
-                  completed ? "bg-brand-500" : "bg-gray-200"
+                  "w-16 h-0.5 mx-1 mt-[-16px]",
+                  completed ? "bg-success-400" : "bg-gray-300"
                 )}
               />
             )}

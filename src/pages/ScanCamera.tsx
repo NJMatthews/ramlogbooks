@@ -562,28 +562,6 @@ export default function ScanCamera() {
 
         <div className="flex-1 overflow-y-auto px-ram-xl py-ram-xl">
           <div className="mx-auto max-w-[600px]">
-            {/* Layout toggle */}
-            <div className="flex rounded-ram-md border border-border bg-card mb-ram-xl overflow-hidden">
-              <button
-                onClick={() => setLayoutChoice("paper")}
-                className={cn(
-                  "flex-1 py-2.5 text-sm font-extrabold transition-colors",
-                  isPaper ? "bg-brand-500 text-white" : "text-gray-600 hover:bg-gray-100"
-                )}
-              >
-                Match Paper
-              </button>
-              <button
-                onClick={() => setLayoutChoice("digital")}
-                className={cn(
-                  "flex-1 py-2.5 text-sm font-extrabold transition-colors",
-                  !isPaper ? "bg-brand-500 text-white" : "text-gray-600 hover:bg-gray-100"
-                )}
-              >
-                Digital Optimized
-              </button>
-            </div>
-
             <div className="rounded-ram-xl border-2 border-dashed border-border bg-card p-ram-xl">
               {isPaper ? (
                 /* Paper-matched layout */
@@ -636,7 +614,6 @@ export default function ScanCamera() {
               ) : (
                 /* Digital optimized layout */
                 <>
-                  <p className="text-xs text-gray-400 mb-4">Digital-optimized layout</p>
                   <h4 className="text-sm font-extrabold text-foreground mb-1">Entry Info</h4>
                   <div className="h-px bg-gray-200 mb-4" />
                   <div className="space-y-4">

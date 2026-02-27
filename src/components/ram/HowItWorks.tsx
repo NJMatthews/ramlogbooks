@@ -49,9 +49,9 @@ export function HowItWorks({ onComplete }: HowItWorksProps) {
   const Icon = step.icon;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] px-ram-xl py-ram-xl">
+    <div className="flex flex-col items-center justify-center min-h-[70vh] px-ram-xl animate-fade-in">
       {/* Progress dots */}
-      <div className="flex gap-ram-sm mb-ram-3xl">
+      <div className="flex gap-ram-sm mb-ram-4xl">
         {tourSteps.map((_, i) => (
           <div
             key={i}
@@ -68,14 +68,14 @@ export function HowItWorks({ onComplete }: HowItWorksProps) {
         <Icon className="h-10 w-10 text-brand-500" />
       </div>
 
-      {/* Content - key forces re-render without container animation */}
-      <div key={currentStep} className="text-center max-w-sm animate-fade-in">
+      {/* Content */}
+      <div className="text-center max-w-sm">
         <h2 className="text-display-xs font-extrabold text-foreground mb-ram-md">{step.title}</h2>
         <p className="text-text-md text-gray-600 leading-relaxed">{step.description}</p>
       </div>
 
       {/* Step indicator */}
-      <p className="text-text-xs text-gray-400 mt-ram-xl mb-ram-2xl">
+      <p className="text-text-xs text-gray-400 mt-ram-xl mb-ram-3xl">
         Step {currentStep + 1} of {tourSteps.length}
       </p>
 

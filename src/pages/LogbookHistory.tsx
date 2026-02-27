@@ -171,11 +171,12 @@ export default function LogbookHistory() {
                 {mockHistoryEntries.map((e, i) => (
                   <tr
                     key={e.id}
+                    ref={(el) => { if (i === selectedIndex && el) el.scrollIntoView({ block: "nearest", behavior: "smooth" }); }}
                     onClick={() => setSelectedIndex(i)}
                     className={cn(
                       "cursor-pointer transition-colors border-b border-border",
                       i === selectedIndex
-                        ? "bg-brand-50"
+                        ? "bg-brand-50 border-l-[3px] border-l-brand-500"
                         : "hover:bg-muted/50"
                     )}
                   >

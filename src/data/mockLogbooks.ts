@@ -3,7 +3,9 @@ export interface Logbook {
   name: string;
   location: string;
   lastEntry: string;
-  status: "open" | "in-progress" | "done" | "error";
+  status: "active" | "archived";
+  entryCount: number;
+  fieldCount: number;
 }
 
 export interface FormField {
@@ -40,35 +42,45 @@ export const mockLogbooks: Logbook[] = [
     name: "Clean Room Environmental Log",
     location: "Building 3, Floor 2",
     lastEntry: "2 hours ago",
-    status: "open",
+    status: "active",
+    entryCount: 142,
+    fieldCount: 8,
   },
   {
     id: "2",
     name: "Equipment Calibration Log",
     location: "Lab A",
     lastEntry: "Yesterday",
-    status: "in-progress",
+    status: "active",
+    entryCount: 89,
+    fieldCount: 12,
   },
   {
     id: "3",
     name: "Water System Monitoring Log",
     location: "Utilities",
     lastEntry: "3 hours ago",
-    status: "open",
+    status: "active",
+    entryCount: 312,
+    fieldCount: 6,
   },
   {
     id: "4",
     name: "Temperature Excursion Log",
     location: "Cold Storage B",
     lastEntry: "1 day ago",
-    status: "done",
+    status: "active",
+    entryCount: 56,
+    fieldCount: 9,
   },
   {
     id: "5",
     name: "Batch Weighing Log",
     location: "Production Suite 1",
     lastEntry: "30 min ago",
-    status: "open",
+    status: "active",
+    entryCount: 203,
+    fieldCount: 10,
   },
 ];
 

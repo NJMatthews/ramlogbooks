@@ -146,7 +146,14 @@ export default function LogbookHistory() {
             <h3 className="text-sm font-extrabold text-foreground">Entry Comparison</h3>
             <span className="text-xs text-muted-foreground">{mockHistoryEntries.length} entries</span>
           </div>
-          <div className="flex-1 overflow-auto">
+          <div
+            ref={tableRef}
+            className="flex-1 overflow-auto cursor-grab select-none"
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
+            onMouseLeave={onMouseUp}
+          >
             <table className="min-w-[800px] text-sm border-collapse">
               <thead className="sticky top-0 z-10">
                 <tr className="bg-muted text-left">

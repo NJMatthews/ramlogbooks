@@ -1,15 +1,16 @@
 import { cn } from "@/lib/utils";
-import { MapPin, Clock, FileText, History, PlusCircle } from "lucide-react";
+import { MapPin, Clock, FileText, History, PlusCircle, Check } from "lucide-react";
 import type { Logbook } from "@/data/mockLogbooks";
 
 interface WorkCardProps {
   logbook: Logbook;
   onNewEntry: () => void;
   onViewHistory?: () => void;
+  showLocationBadge?: boolean;
   className?: string;
 }
 
-export function WorkCard({ logbook, onNewEntry, onViewHistory, className }: WorkCardProps) {
+export function WorkCard({ logbook, onNewEntry, onViewHistory, showLocationBadge, className }: WorkCardProps) {
   return (
     <div
       className={cn(

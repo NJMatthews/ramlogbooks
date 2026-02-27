@@ -51,6 +51,14 @@ export default function ScanCamera() {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dropTarget, setDropTarget] = useState<number | null>(null);
   const dragCounter = useRef(0);
+  const [gridColumns, setGridColumns] = useState(4);
+  
+  type DigitalLayoutItem =
+    | { type: "field"; fieldId: string }
+    | { type: "section"; id: string; title: string };
+  const [digitalLayout, setDigitalLayout] = useState<DigitalLayoutItem[]>(() =>
+    mockScanResults.map((f) => ({ type: "field" as const, fieldId: f.id }))
+  );
 
   // Processing animation
   useEffect(() => {

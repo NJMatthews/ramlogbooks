@@ -45,6 +45,10 @@ export default function ScanCamera() {
   const [layoutChoice, setLayoutChoice] = useState<"paper" | "digital">("paper");
   const [processStep, setProcessStep] = useState(0);
   const [showTour, setShowTour] = useState(false);
+  const [layoutSpacing, setLayoutSpacing] = useState<"compact" | "normal" | "relaxed">("normal");
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dropTarget, setDropTarget] = useState<number | null>(null);
+  const dragCounter = useRef(0);
 
   // Processing animation
   useEffect(() => {

@@ -39,7 +39,15 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <AppInner />
+      <div className="min-h-screen w-full flex items-center justify-center bg-gray-900 p-4 md:p-8">
+        <div className="relative w-full max-w-[874px] h-[1194px] max-h-[95vh] rounded-[36px] border-[12px] border-gray-800 bg-background shadow-2xl overflow-hidden flex flex-col">
+          {/* iPad camera notch */}
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-gray-700 z-50" />
+          <div className="flex-1 overflow-hidden">
+            <AppInner />
+          </div>
+        </div>
+      </div>
     </TooltipProvider>
   </QueryClientProvider>
 );

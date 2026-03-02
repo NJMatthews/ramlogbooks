@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { GripVertical, Pencil, PlusCircle, X } from "lucide-react";
+import { GripVertical, Pencil, PlusCircle, X, Eye, RotateCcw, GitBranch } from "lucide-react";
 import { AppLayout } from "@/components/ram/AppLayout";
 import { HeaderNav } from "@/components/ram/HeaderNav";
 import { StatusChip } from "@/components/ram/StatusChip";
 import { RAMDrawer } from "@/components/ram/RAMDrawer";
 import { RAMInput } from "@/components/ram/RAMInput";
 import { CreateMethodDrawer } from "@/components/ram/CreateMethodDrawer";
-import { getTemplateById, mockTemplateVersions, locationAssociations, type TemplateField } from "@/data/mockAssets";
+import { getTemplateById, mockTemplateVersions, locationAssociations, type TemplateField, type TemplateVersion } from "@/data/mockAssets";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { mockLocations } from "@/data/mockLocations";

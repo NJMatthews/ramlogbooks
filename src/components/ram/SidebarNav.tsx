@@ -1,11 +1,16 @@
-import { BookOpen, ScanLine, RefreshCw, Settings, MapPin, ClipboardList, Package, ChevronRight } from "lucide-react";
+import { ClipboardCheck, Settings2, CheckSquare, ScanLine, RefreshCw, Settings, MapPin, ClipboardList, Package, ChevronRight } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/logo.png";
 import { useDeviceLocation } from "@/hooks/useDeviceLocation";
 
-const navItems = [
-  { label: "My Logbooks", icon: BookOpen, path: "/" },
+const primaryNav = [
+  { label: "Execute", icon: ClipboardCheck, path: "/execute" },
+  { label: "Manage", icon: Settings2, path: "/manage" },
+  { label: "Review", icon: CheckSquare, path: "/review" },
+];
+
+const secondaryNav = [
   { label: "Scan & Convert", icon: ScanLine, path: "/scan" },
   { label: "Sync Queue", icon: RefreshCw, path: "/queue" },
 ];
@@ -24,8 +29,8 @@ export function SidebarNav() {
         <h2 className="text-[17px] font-extrabold text-foreground" style={{ fontFamily: "'Avenir Heavy', sans-serif" }}>RAM Logbooks</h2>
       </div>
       <nav className="flex flex-1 flex-col gap-ram-sm px-ram-md">
-        {navItems.map((item) => {
-          const active = location.pathname === item.path;
+        {primaryNav.map((item) => {
+          const active = location.pathname.startsWith(item.path);
           return (
             <button
               key={item.label}
@@ -33,7 +38,31 @@ export function SidebarNav() {
               className={cn(
                 "flex items-center gap-ram-lg rounded-ram-md px-ram-lg py-ram-lg text-text-md font-medium transition-colors relative",
                 active
-                  ? "text-brand-500"
+                  ? "text-brand-500 bg-brand-100"
+                  : "text-gray-800 hover:bg-gray-100"
+              )}
+            >
+              {active && (
+                <div className="absolute left-0 top-1/4 bottom-1/4 w-[3px] rounded-r bg-brand-500" />
+              )}
+              <item.icon className="h-5 w-5 shrink-0" />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+
+        <div className="my-ram-lg border-t border-border" />
+
+        {secondaryNav.map((item) => {
+          const active = location.pathname.startsWith(item.path);
+          return (
+            <button
+              key={item.label}
+              onClick={() => navigate(item.path)}
+              className={cn(
+                "flex items-center gap-ram-lg rounded-ram-md px-ram-lg py-ram-lg text-text-md font-medium transition-colors relative",
+                active
+                  ? "text-brand-500 bg-brand-100"
                   : "text-gray-800 hover:bg-gray-100"
               )}
             >

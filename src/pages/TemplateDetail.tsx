@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { GripVertical, Pencil, PlusCircle, X } from "lucide-react";
+import { GripVertical, Pencil, PlusCircle, X, Eye, RotateCcw, GitBranch } from "lucide-react";
 import { AppLayout } from "@/components/ram/AppLayout";
 import { HeaderNav } from "@/components/ram/HeaderNav";
 import { StatusChip } from "@/components/ram/StatusChip";
 import { RAMDrawer } from "@/components/ram/RAMDrawer";
 import { RAMInput } from "@/components/ram/RAMInput";
 import { CreateMethodDrawer } from "@/components/ram/CreateMethodDrawer";
-import { getTemplateById, mockTemplateVersions, locationAssociations, type TemplateField } from "@/data/mockAssets";
+import { getTemplateById, mockTemplateVersions, locationAssociations, type TemplateField, type TemplateVersion } from "@/data/mockAssets";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { mockLocations } from "@/data/mockLocations";
@@ -26,6 +26,8 @@ export default function TemplateDetail() {
   const [addFieldOpen, setAddFieldOpen] = useState(false);
   const [versionModalOpen, setVersionModalOpen] = useState(false);
   const [methodDrawerOpen, setMethodDrawerOpen] = useState(false);
+  const [viewingVersion, setViewingVersion] = useState<TemplateVersion | null>(null);
+  const [revertConfirmVersion, setRevertConfirmVersion] = useState<TemplateVersion | null>(null);
 
   // Add field drawer state
   const [newFieldName, setNewFieldName] = useState("");
@@ -352,26 +354,102 @@ export default function TemplateDetail() {
         </div>
       </RAMDrawer>
 
-      {/* Version Modal */}
-      {versionModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/60">
-          <div className="mx-ram-xl max-w-md rounded-ram-xl bg-card p-ram-3xl shadow-ram-lg">
-            <h3 className="text-text-lg font-extrabold text-foreground">Create New Version</h3>
-            <p className="mt-ram-lg text-text-sm text-gray-600">
-              Version management is available in the full release. New versions lock existing entries on their original format and apply the new format to all future entries.
-            </p>
-            <button
-              onClick={() => setVersionModalOpen(false)}
-              className="mt-ram-xl w-full rounded-ram-md bg-brand-500 py-ram-lg text-text-md font-extrabold text-primary-foreground"
-            >
-              Got It
-            </button>
-          </div>
-        </div>
-      )}
 
 
       <CreateMethodDrawer open={methodDrawerOpen} onClose={() => setMethodDrawerOpen(false)} />
+
+      {/* Version Detail Drawer */}
+      <RAMDrawer
+        open={!!viewingVersion}
+        onClose={() => setViewingVersion(null)}
+        title={viewingVersion ? `Version ${viewingVersion.version}` : ""}
+        footer={
+          viewingVersion ? (
+            <div className="flex gap-ram-md">
+              {viewingVersion.status === "Superseded" && (
+                <button
+                  onClick={() => { setRevertConfirmVersion(viewingVersion); setViewingVersion(null); }}
+                  className="flex-1 flex items-center justify-center gap-ram-sm rounded-ram-md border border-border py-ram-lg text-text-md font-extrabold text-foreground hover:bg-muted transition-colors"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Revert to This
+                </button>
+              )}
+              <button
+                onClick={() => { setViewingVersion(null); navigate("/manage/template/new"); }}
+                className="flex-1 flex items-center justify-center gap-ram-sm rounded-ram-md bg-brand-500 py-ram-lg text-text-md font-extrabold text-primary-foreground"
+              >
+                <GitBranch className="h-4 w-4" />
+                New Version from This
+              </button>
+            </div>
+          ) : undefined
+        }
+      >
+        {viewingVersion && (
+          <div className="space-y-ram-xl">
+            <div className="space-y-ram-sm">
+              <div className="flex items-center gap-ram-md">
+                <StatusChip status={viewingVersion.status === "Active" ? "published" : "archived"} />
+                <span className="text-text-xs text-gray-500">{viewingVersion.entryCount} entries</span>
+              </div>
+              <p className="text-text-sm text-gray-500">{viewingVersion.date} · by {viewingVersion.author}</p>
+              <p className="text-text-sm text-gray-600">{viewingVersion.changeSummary}</p>
+            </div>
+
+            <div>
+              <h3 className="text-[13px] font-extrabold uppercase tracking-wider text-gray-500 mb-ram-md">
+                Fields in this version
+              </h3>
+              {viewingVersion.fields.length === 0 ? (
+                <p className="text-text-sm text-gray-500 py-ram-xl text-center">No field data available for this version.</p>
+              ) : (
+                <div className="space-y-ram-sm">
+                  {viewingVersion.fields.map((field, i) => (
+                    <div key={i} className="flex items-center gap-ram-md rounded-ram-md border border-border bg-muted/50 p-ram-lg">
+                      <span className="text-text-xs text-gray-400 w-5">{i + 1}.</span>
+                      <span className="flex-1 text-[14px] font-extrabold text-foreground">
+                        {field.name}
+                        {field.required && <span className="text-error-600 ml-1">*</span>}
+                      </span>
+                      <span className="inline-flex items-center rounded-full bg-gray-200 px-ram-md py-ram-xxs text-[11px] text-gray-600">
+                        {field.type}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </RAMDrawer>
+
+      {/* Revert Confirmation Modal */}
+      {revertConfirmVersion && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/60">
+          <div className="mx-ram-xl max-w-md rounded-ram-xl bg-card p-ram-3xl shadow-ram-lg">
+            <h3 className="text-text-lg font-extrabold text-foreground">Revert to {revertConfirmVersion.version}?</h3>
+            <p className="mt-ram-lg text-text-sm text-gray-600">
+              This will restore the template to {revertConfirmVersion.version} ({revertConfirmVersion.date.replace("Published ", "")}). 
+              Existing entries will remain on their original version format. All future entries will use the reverted format.
+            </p>
+            <div className="mt-ram-xl flex gap-ram-md">
+              <button
+                onClick={() => setRevertConfirmVersion(null)}
+                className="flex-1 rounded-ram-md border border-border py-ram-lg text-text-md font-extrabold text-foreground hover:bg-muted transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { setRevertConfirmVersion(null); }}
+                className="flex-1 rounded-ram-md bg-brand-500 py-ram-lg text-text-md font-extrabold text-primary-foreground"
+              >
+                Revert
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }

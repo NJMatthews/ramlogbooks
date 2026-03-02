@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ScanLine, Nfc, ChevronRight, Clock, FileText, AlertTriangle, ClipboardList, PlusCircle } from "lucide-react";
+import { ScanLine, Nfc, ChevronRight, Clock, FileText, AlertTriangle, ClipboardList, History } from "lucide-react";
 import { AppLayout } from "@/components/ram/AppLayout";
 import { HeaderNav } from "@/components/ram/HeaderNav";
 import { SearchBar } from "@/components/ram/SearchBar";
@@ -215,8 +215,9 @@ function LogbookRow({
 }) {
   return (
     <div
+      onClick={() => !dimmed && navigate(`/entry/${instance.instanceId}`)}
       className={cn(
-        "flex items-center gap-ram-md rounded-ram-md border border-border bg-card p-ram-lg transition-opacity",
+        "flex items-center gap-ram-md rounded-ram-md border border-border bg-card p-ram-lg transition-opacity cursor-pointer hover:shadow-ram-sm",
         dimmed && "opacity-35 pointer-events-none"
       )}
     >
@@ -253,11 +254,11 @@ function LogbookRow({
       </div>
       <div className="flex items-center gap-ram-md shrink-0">
         <button
-          onClick={() => navigate(`/entry/${instance.instanceId}`)}
+          onClick={(e) => { e.stopPropagation(); navigate(`/logbook-history/${instance.instanceId}`); }}
           className="flex items-center gap-1 text-text-xs font-medium text-brand-500 hover:underline"
         >
-          <PlusCircle className="h-3.5 w-3.5" />
-          New Entry
+          <History className="h-3.5 w-3.5" />
+          View History
         </button>
         <ChevronRight className="h-4 w-4 text-gray-400" />
       </div>

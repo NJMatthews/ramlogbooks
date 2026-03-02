@@ -254,7 +254,7 @@ function LogbookRow({
       </div>
       <div className="flex items-center gap-ram-md shrink-0">
         <button
-          onClick={(e) => { e.stopPropagation(); navigate(`/logbook-history/${instance.instanceId}`); }}
+          onClick={(e) => { e.stopPropagation(); navigate(`/history/${instance.instanceId}`); }}
           className="flex items-center gap-1 text-text-xs font-medium text-brand-500 hover:underline"
         >
           <History className="h-3.5 w-3.5" />

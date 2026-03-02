@@ -6,6 +6,7 @@ import { HeaderNav } from "@/components/ram/HeaderNav";
 import { StatusChip } from "@/components/ram/StatusChip";
 import { RAMDrawer } from "@/components/ram/RAMDrawer";
 import { RAMInput } from "@/components/ram/RAMInput";
+import { CreateMethodDrawer } from "@/components/ram/CreateMethodDrawer";
 import { getTemplateById, mockTemplateVersions, locationAssociations, type TemplateField } from "@/data/mockAssets";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -24,6 +25,7 @@ export default function TemplateDetail() {
   const [activeTab, setActiveTab] = useState<TabId>("fields");
   const [addFieldOpen, setAddFieldOpen] = useState(false);
   const [versionModalOpen, setVersionModalOpen] = useState(false);
+  const [methodDrawerOpen, setMethodDrawerOpen] = useState(false);
 
   // Add field drawer state
   const [newFieldName, setNewFieldName] = useState("");
@@ -74,7 +76,10 @@ export default function TemplateDetail() {
         type="back"
         title={template.name}
         rightAction={
-          <button className="flex items-center gap-ram-sm rounded-ram-md border border-border px-ram-xl py-ram-md text-text-sm font-medium text-foreground hover:bg-muted transition-colors">
+          <button
+            onClick={() => setMethodDrawerOpen(true)}
+            className="flex items-center gap-ram-sm rounded-ram-md border border-border px-ram-xl py-ram-md text-text-sm font-medium text-foreground hover:bg-muted transition-colors"
+          >
             <Pencil className="h-4 w-4" />
             Edit Template
           </button>
@@ -201,7 +206,7 @@ export default function TemplateDetail() {
           <div className="space-y-ram-lg">
             <div className="flex justify-end">
               <button
-                onClick={() => setVersionModalOpen(true)}
+                onClick={() => setMethodDrawerOpen(true)}
                 className="flex items-center gap-ram-sm rounded-ram-md border border-border px-ram-xl py-ram-md text-text-sm font-medium text-foreground hover:bg-muted transition-colors"
               >
                 <PlusCircle className="h-4 w-4" />

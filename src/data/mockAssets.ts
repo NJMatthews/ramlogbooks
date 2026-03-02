@@ -39,6 +39,7 @@ export interface TemplateVersion {
   changeSummary: string;
   status: "Active" | "Superseded";
   entryCount: number;
+  fields: TemplateField[];
 }
 
 export interface LogbookInstance {
@@ -115,9 +116,36 @@ export const mockTemplates: LogbookTemplate[] = [
 
 export const mockTemplateVersions: Record<string, TemplateVersion[]> = {
   "tpl-001": [
-    { version: "v2.1", date: "Published Feb 20, 2026", author: "N. Matthews", changeSummary: "Added 'Cleaning Method' field, updated 'Verification' to required", status: "Active", entryCount: 342 },
-    { version: "v2.0", date: "Published Jan 5, 2026", author: "N. Matthews", changeSummary: "Reorganized field order, added 'Observations' textarea", status: "Superseded", entryCount: 578 },
-    { version: "v1.0", date: "Published Oct 12, 2025", author: "K. Chen", changeSummary: "Initial version", status: "Superseded", entryCount: 327 },
+    {
+      version: "v2.1", date: "Published Feb 20, 2026", author: "N. Matthews",
+      changeSummary: "Added 'Cleaning Method' field, updated 'Verification' to required",
+      status: "Active", entryCount: 342, fields: cleaningLogFields,
+    },
+    {
+      version: "v2.0", date: "Published Jan 5, 2026", author: "N. Matthews",
+      changeSummary: "Reorganized field order, added 'Observations' textarea",
+      status: "Superseded", entryCount: 578,
+      fields: [
+        { name: "Date/Time", type: "Date", required: true },
+        { name: "Operator", type: "Text", required: true, autoFill: "Auto-filled from auth" },
+        { name: "Equipment ID", type: "Text", required: true, autoFill: "Auto-filled from asset" },
+        { name: "Cleaning Agent", type: "Text", required: true },
+        { name: "Verification", type: "Toggle", required: false },
+        { name: "Observations", type: "Textarea", required: false },
+      ],
+    },
+    {
+      version: "v1.0", date: "Published Oct 12, 2025", author: "K. Chen",
+      changeSummary: "Initial version",
+      status: "Superseded", entryCount: 327,
+      fields: [
+        { name: "Date/Time", type: "Date", required: true },
+        { name: "Operator", type: "Text", required: true },
+        { name: "Equipment ID", type: "Text", required: true },
+        { name: "Cleaning Agent", type: "Text", required: true },
+        { name: "Verification", type: "Toggle", required: false },
+      ],
+    },
   ],
 };
 

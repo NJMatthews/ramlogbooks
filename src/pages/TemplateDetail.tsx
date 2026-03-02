@@ -217,9 +217,10 @@ export default function TemplateDetail() {
             </div>
 
             {versions.map((ver) => (
-              <div
+              <button
                 key={ver.version}
-                className="rounded-ram-md border border-border bg-card p-ram-xl"
+                onClick={() => setViewingVersion(ver)}
+                className="w-full text-left rounded-ram-md border border-border bg-card p-ram-xl hover:shadow-ram-sm hover:border-brand-500 transition-all"
               >
                 <div className="flex items-center gap-ram-md flex-wrap">
                   <span className="text-[15px] font-extrabold text-foreground">{ver.version}</span>
@@ -227,12 +228,13 @@ export default function TemplateDetail() {
                     status={ver.status === "Active" ? "published" : "archived"}
                   />
                   <span className="text-text-xs text-gray-500">{ver.entryCount} entries</span>
+                  <span className="ml-auto text-text-xs font-medium text-brand-500">View →</span>
                 </div>
                 <p className="mt-ram-sm text-text-sm text-gray-500">
                   {ver.date} · by {ver.author}
                 </p>
                 <p className="mt-ram-sm text-text-sm text-gray-600">{ver.changeSummary}</p>
-              </div>
+              </button>
             ))}
 
             {versions.length === 0 && (

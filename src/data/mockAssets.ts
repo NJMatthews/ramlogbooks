@@ -270,9 +270,16 @@ export function getEntriesBySlice(sliceMode: "logbook" | "location" | "asset"): 
 
   for (const entry of mockReviewEntries) {
     let key: string;
-    if (sliceMode === "logbook") key = entry.logbook;
-    else if (sliceMode === "location") key = entry.location;
-    else key = entry.asset ?? "Location-Level Logs";
+    if (sliceMode === "logbook") {
+      // Group by logbook + asset to keep each instance separate
+      key = entry.asset
+        ? `${entry.logbook} · ${entry.asset}`
+        : `${entry.logbook} · Location-Level`;
+    } else if (sliceMode === "location") {
+      key = entry.location;
+    } else {
+      key = entry.asset ?? "Location-Level Logs";
+    }
 
     const arr = groupMap.get(key) ?? [];
     arr.push(entry);

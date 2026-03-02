@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PlusCircle, ChevronRight } from "lucide-react";
 import { AppLayout } from "@/components/ram/AppLayout";
 import { HeaderNav } from "@/components/ram/HeaderNav";
 import { StatusChip } from "@/components/ram/StatusChip";
+import { CreateMethodDrawer } from "@/components/ram/CreateMethodDrawer";
 import { mockTemplates } from "@/data/mockAssets";
 
 export default function ManageTemplates() {
   const navigate = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
 
   return (
     <AppLayout>
@@ -15,7 +18,7 @@ export default function ManageTemplates() {
         title="Manage Templates"
         rightAction={
           <button
-            onClick={() => navigate("/manage/template/new")}
+            onClick={() => setCreateOpen(true)}
             className="flex items-center gap-ram-sm rounded-full bg-brand-500 px-ram-xl py-ram-md text-text-sm font-medium text-primary-foreground"
           >
             <PlusCircle className="h-4 w-4" />
@@ -54,6 +57,8 @@ export default function ManageTemplates() {
           </button>
         ))}
       </div>
+
+      <CreateMethodDrawer open={createOpen} onClose={() => setCreateOpen(false)} />
     </AppLayout>
   );
 }

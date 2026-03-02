@@ -1,18 +1,27 @@
-import { ScanLine, FileText } from "lucide-react";
+import { ScanLine, FileText, type LucideIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { RAMDrawer } from "@/components/ram/RAMDrawer";
+
+export interface CreateMethodOption {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  onClick: () => void;
+}
 
 interface CreateMethodDrawerProps {
   open: boolean;
   onClose: () => void;
   /** Where "Create from Scratch" navigates. Defaults to /manage/template/new */
   scratchRoute?: string;
+  /** Additional options inserted after the defaults */
+  extraOptions?: CreateMethodOption[];
 }
 
-export function CreateMethodDrawer({ open, onClose, scratchRoute = "/manage/template/new" }: CreateMethodDrawerProps) {
+export function CreateMethodDrawer({ open, onClose, scratchRoute = "/manage/template/new", extraOptions = [] }: CreateMethodDrawerProps) {
   const navigate = useNavigate();
 
-  const options = [
+  const options: CreateMethodOption[] = [
     {
       icon: ScanLine,
       title: "Scan Paper Logbook",
@@ -25,6 +34,7 @@ export function CreateMethodDrawer({ open, onClose, scratchRoute = "/manage/temp
       description: "Start with a blank template and add fields manually.",
       onClick: () => { onClose(); navigate(scratchRoute); },
     },
+    ...extraOptions,
   ];
 
   return (

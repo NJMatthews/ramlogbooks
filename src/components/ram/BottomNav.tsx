@@ -1,11 +1,11 @@
-import { BookOpen, ScanLine, RefreshCw } from "lucide-react";
+import { ClipboardCheck, Settings2, CheckSquare } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { label: "My Logbooks", icon: BookOpen, path: "/" },
-  { label: "Scan & Convert", icon: ScanLine, path: "/scan" },
-  { label: "Sync Queue", icon: RefreshCw, path: "/queue" },
+  { label: "Execute", icon: ClipboardCheck, path: "/execute" },
+  { label: "Manage", icon: Settings2, path: "/manage" },
+  { label: "Review", icon: CheckSquare, path: "/review" },
 ];
 
 export function BottomNav() {
@@ -15,7 +15,7 @@ export function BottomNav() {
   return (
     <nav className="sticky bottom-0 z-40 flex h-[115px] items-start border-t border-border bg-gray-100 pt-ram-md pb-ram-4xl">
       {navItems.map((item) => {
-        const active = location.pathname === item.path;
+        const active = location.pathname.startsWith(item.path);
         return (
           <button
             key={item.label}

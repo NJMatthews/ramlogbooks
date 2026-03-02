@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Download, CheckCircle, XCircle, Eye, ChevronDown, ChevronRight } from "lucide-react";
+import { Download, CheckCircle, XCircle, Eye, ChevronDown, ChevronRight, List, Grid3X3 } from "lucide-react";
 import { AppLayout } from "@/components/ram/AppLayout";
 import { HeaderNav } from "@/components/ram/HeaderNav";
 import { SearchBar } from "@/components/ram/SearchBar";
@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 
 type DateRange = "today" | "7days" | "30days";
 type StatusFilter = "all" | ReviewStatus;
+type ViewMode = "grouped" | "grid";
 
 export default function ReviewDashboard() {
   const isMobile = useIsMobile();
@@ -24,6 +25,7 @@ export default function ReviewDashboard() {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [confirmAction, setConfirmAction] = useState<{ action: "approve" | "reject"; ids: string[] } | null>(null);
   const [entries, setEntries] = useState(mockReviewEntries);
+  const [viewMode, setViewMode] = useState<ViewMode>("grouped");
 
   const filteredEntries = useMemo(() => {
     return entries.filter((e) => {
@@ -99,12 +101,9 @@ export default function ReviewDashboard() {
     setDetailEntry(null);
   };
 
-  const statusOptions: { value: StatusFilter; label: string }[] = [
-    { value: "all", label: "All" },
-    { value: "pending-review", label: "Pending" },
-    { value: "approved", label: "Approved" },
-    { value: "rejected", label: "Rejected" },
-  ];
+  const handleStatClick = (filter: StatusFilter) => {
+    setStatusFilter((prev) => prev === filter ? "all" : filter);
+  };
 
   return (
     <AppLayout>
@@ -134,7 +133,7 @@ export default function ReviewDashboard() {
 
       <div className="flex-1 overflow-y-auto">
         <div className="px-ram-xl py-ram-xl space-y-ram-xl">
-          {/* Filters */}
+          {/* Filters row: date + search + view toggle */}
           <div className="flex flex-wrap items-center gap-ram-md">
             <select
               value={dateRange}
@@ -145,106 +144,82 @@ export default function ReviewDashboard() {
               <option value="7days">Last 7 days</option>
               <option value="30days">Last 30 days</option>
             </select>
-            <div className="flex gap-ram-xxs">
-              {statusOptions.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => setStatusFilter(opt.value)}
-                  className={cn(
-                    "rounded-full px-ram-lg py-ram-sm text-text-xs font-medium border transition-colors",
-                    statusFilter === opt.value
-                      ? "bg-brand-500 text-primary-foreground border-brand-500"
-                      : "bg-card text-gray-600 border-border"
-                  )}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
             <div className="flex-1 min-w-[200px]">
               <SearchBar value={search} onChange={setSearch} placeholder="Search operator, asset, logbook…" />
             </div>
+            {/* View mode toggle */}
+            <div className="flex rounded-ram-md border border-border overflow-hidden">
+              <button
+                onClick={() => setViewMode("grouped")}
+                className={cn(
+                  "flex items-center gap-ram-xs px-ram-lg py-ram-md text-text-sm font-medium transition-colors",
+                  viewMode === "grouped" ? "bg-brand-500 text-primary-foreground" : "bg-card text-gray-600 hover:bg-muted"
+                )}
+              >
+                <List className="h-4 w-4" />
+                Grouped
+              </button>
+              <button
+                onClick={() => setViewMode("grid")}
+                className={cn(
+                  "flex items-center gap-ram-xs px-ram-lg py-ram-md text-text-sm font-medium transition-colors",
+                  viewMode === "grid" ? "bg-brand-500 text-primary-foreground" : "bg-card text-gray-600 hover:bg-muted"
+                )}
+              >
+                <Grid3X3 className="h-4 w-4" />
+                Details
+              </button>
+            </div>
           </div>
 
-          {/* Stats */}
+          {/* Clickable stat cards as filters */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-ram-lg">
-            <StatCard label="Pending Review" value={stats.pending} color="text-warning-400" />
-            <StatCard label="Approved" value={stats.approved} color="text-success-400" />
-            <StatCard label="Rejected" value={stats.rejected} color="text-error-600" />
-            <StatCard label="Total Entries" value={stats.total} color="text-foreground" />
+            <StatCard label="Pending Review" value={stats.pending} color="text-warning-400" active={statusFilter === "pending-review"} onClick={() => handleStatClick("pending-review")} />
+            <StatCard label="Approved" value={stats.approved} color="text-success-400" active={statusFilter === "approved"} onClick={() => handleStatClick("approved")} />
+            <StatCard label="Rejected" value={stats.rejected} color="text-error-600" active={statusFilter === "rejected"} onClick={() => handleStatClick("rejected")} />
+            <StatCard label="Total Entries" value={stats.total} color="text-foreground" active={statusFilter === "all"} onClick={() => handleStatClick("all")} />
           </div>
 
-          {/* Grid */}
-          {isMobile ? (
-            /* Mobile card list */
-            <div className="space-y-ram-md">
-              {groups.map((group) => (
-                <div key={group.label}>
-                  <button onClick={() => toggleGroup(group.label)} className="flex w-full items-center gap-ram-sm py-ram-md bg-gray-100 rounded-ram-md px-ram-lg mb-ram-sm">
-                    {collapsedGroups.has(group.label) ? <ChevronRight className="h-4 w-4 text-gray-600" /> : <ChevronDown className="h-4 w-4 text-gray-600" />}
-                    <span className="text-[15px] font-extrabold text-foreground">{group.label}</span>
-                    <span className="text-text-xs text-gray-500 ml-auto">{group.totalEntries} entries, {group.pendingCount} pending</span>
-                  </button>
-                  {!collapsedGroups.has(group.label) && group.entries.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="rounded-ram-md border border-border bg-card p-ram-lg mb-ram-sm"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-ram-md">
-                          {selectMode && (
-                            <input type="checkbox" checked={selected.has(entry.id)} onChange={() => toggleSelect(entry.id)} className="accent-brand-500" />
-                          )}
-                          <span className="text-text-xs text-gray-500">{entry.date}</span>
-                        </div>
-                        <StatusChip status={entry.status} />
-                      </div>
-                      <p className="mt-ram-sm text-[15px] font-extrabold text-foreground">{entry.logbook}</p>
-                      <p className="text-text-sm text-gray-600">{entry.location}{entry.asset ? ` · ${entry.asset}` : ""}</p>
-                      <p className="text-text-sm text-gray-500">{entry.operator}</p>
-                      <div className="mt-ram-lg flex gap-ram-md">
-                        <button onClick={() => handleApprove(entry.id)} className="p-ram-md text-success-400 hover:bg-success-100 rounded-ram-xs"><CheckCircle className="h-5 w-5" /></button>
-                        <button onClick={() => handleReject(entry.id)} className="p-ram-md text-error-600 hover:bg-error-100 rounded-ram-xs"><XCircle className="h-5 w-5" /></button>
-                        <button onClick={() => setDetailEntry(entry)} className="p-ram-md text-brand-500 hover:bg-brand-100 rounded-ram-xs"><Eye className="h-5 w-5" /></button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
+          {/* Content based on view mode */}
+          {viewMode === "grouped" ? (
+            /* Grouped view */
+            isMobile ? (
+              <MobileGroupedView
+                groups={groups}
+                collapsedGroups={collapsedGroups}
+                toggleGroup={toggleGroup}
+                selectMode={selectMode}
+                selected={selected}
+                toggleSelect={toggleSelect}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onView={setDetailEntry}
+              />
+            ) : (
+              <DesktopGroupedTable
+                groups={groups}
+                collapsedGroups={collapsedGroups}
+                toggleGroup={toggleGroup}
+                filteredEntries={filteredEntries}
+                selected={selected}
+                setSelected={setSelected}
+                toggleSelect={toggleSelect}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onView={setDetailEntry}
+              />
+            )
           ) : (
-            /* Desktop table */
-            <div className="rounded-ram-md border border-border overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="w-10 px-ram-lg py-ram-lg"><input type="checkbox" onChange={(e) => { if (e.target.checked) setSelected(new Set(filteredEntries.map(r => r.id))); else setSelected(new Set()); }} className="accent-brand-500" /></th>
-                    <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Date</th>
-                    <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Logbook</th>
-                    <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Location</th>
-                    <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Asset</th>
-                    <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Operator</th>
-                    <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Status</th>
-                    <th className="w-20 px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {groups.map((group) => (
-                    <GroupRows
-                      key={group.label}
-                      group={group}
-                      collapsed={collapsedGroups.has(group.label)}
-                      onToggle={() => toggleGroup(group.label)}
-                      selected={selected}
-                      onToggleSelect={toggleSelect}
-                      onApprove={handleApprove}
-                      onReject={handleReject}
-                      onView={setDetailEntry}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            /* Detail grid view for batch approval */
+            <DetailGridView
+              entries={filteredEntries}
+              selected={selected}
+              setSelected={setSelected}
+              toggleSelect={toggleSelect}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              onView={setDetailEntry}
+            />
           )}
         </div>
 
@@ -287,15 +262,241 @@ export default function ReviewDashboard() {
   );
 }
 
-function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
+/* ── Stat Card (clickable filter) ── */
+function StatCard({ label, value, color, active, onClick }: { label: string; value: number; color: string; active: boolean; onClick: () => void }) {
   return (
-    <div className="rounded-ram-md border border-border bg-card p-ram-xl">
+    <button
+      onClick={onClick}
+      className={cn(
+        "rounded-ram-md border bg-card p-ram-xl text-left transition-all",
+        active ? "border-brand-500 ring-2 ring-brand-500/20 shadow-ram-sm" : "border-border hover:border-brand-300 hover:shadow-ram-sm"
+      )}
+    >
       <p className={cn("text-display-xs font-extrabold", color)}>{value}</p>
       <p className="text-text-sm text-gray-600 mt-ram-xxs">{label}</p>
+    </button>
+  );
+}
+
+/* ── Detail Grid View (flat cards with entry details + checkboxes) ── */
+function DetailGridView({
+  entries,
+  selected,
+  setSelected,
+  toggleSelect,
+  onApprove,
+  onReject,
+  onView,
+}: {
+  entries: ReviewEntry[];
+  selected: Set<string>;
+  setSelected: (s: Set<string>) => void;
+  toggleSelect: (id: string) => void;
+  onApprove: (id: string) => void;
+  onReject: (id: string) => void;
+  onView: (entry: ReviewEntry) => void;
+}) {
+  const allSelected = entries.length > 0 && entries.every((e) => selected.has(e.id));
+
+  return (
+    <div className="space-y-ram-md">
+      {/* Select all bar */}
+      <div className="flex items-center justify-between rounded-ram-md bg-gray-100 px-ram-lg py-ram-md">
+        <label className="flex items-center gap-ram-md text-text-sm font-medium text-foreground cursor-pointer">
+          <input
+            type="checkbox"
+            checked={allSelected}
+            onChange={() => {
+              if (allSelected) setSelected(new Set());
+              else setSelected(new Set(entries.map((e) => e.id)));
+            }}
+            className="accent-brand-500"
+          />
+          Select all ({entries.length})
+        </label>
+      </div>
+
+      {/* Grid of entry detail cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-ram-md">
+        {entries.map((entry) => (
+          <div
+            key={entry.id}
+            className={cn(
+              "rounded-ram-md border bg-card p-ram-lg transition-all cursor-pointer hover:shadow-ram-sm",
+              selected.has(entry.id) ? "border-brand-500 ring-2 ring-brand-500/20" : "border-border"
+            )}
+            onClick={() => toggleSelect(entry.id)}
+          >
+            <div className="flex items-start justify-between mb-ram-sm">
+              <div className="flex items-center gap-ram-md">
+                <input
+                  type="checkbox"
+                  checked={selected.has(entry.id)}
+                  onChange={(e) => { e.stopPropagation(); toggleSelect(entry.id); }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="accent-brand-500"
+                />
+                <StatusChip status={entry.status} />
+              </div>
+              <span className="text-text-xs text-gray-500">{entry.date}</span>
+            </div>
+
+            <p className="text-[15px] font-extrabold text-foreground">{entry.logbook}</p>
+            <p className="text-text-sm text-gray-600">{entry.location}{entry.asset ? ` · ${entry.asset}` : ""}</p>
+            <p className="text-text-xs text-gray-500 mt-ram-xxs">{entry.operator}</p>
+
+            {/* Entry fields preview */}
+            {entry.fields && entry.fields.length > 0 && (
+              <div className="mt-ram-md border-t border-border pt-ram-md space-y-ram-xs">
+                {entry.fields.slice(0, 4).map((field, i) => (
+                  <div key={i} className="flex justify-between text-text-xs">
+                    <span className="text-gray-500">{field.label}</span>
+                    <span className="text-foreground font-medium">{field.value}</span>
+                  </div>
+                ))}
+                {entry.fields.length > 4 && (
+                  <p className="text-text-xs text-gray-400">+{entry.fields.length - 4} more fields</p>
+                )}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="mt-ram-md flex gap-ram-sm border-t border-border pt-ram-md" onClick={(e) => e.stopPropagation()}>
+              <button onClick={() => onApprove(entry.id)} className="flex items-center gap-ram-xxs p-ram-sm text-success-400 hover:bg-success-100 rounded-ram-xs text-text-xs font-medium">
+                <CheckCircle className="h-4 w-4" /> Approve
+              </button>
+              <button onClick={() => onReject(entry.id)} className="flex items-center gap-ram-xxs p-ram-sm text-error-600 hover:bg-error-100 rounded-ram-xs text-text-xs font-medium">
+                <XCircle className="h-4 w-4" /> Reject
+              </button>
+              <button onClick={() => onView(entry)} className="flex items-center gap-ram-xxs p-ram-sm text-brand-500 hover:bg-brand-100 rounded-ram-xs text-text-xs font-medium ml-auto">
+                <Eye className="h-4 w-4" /> View
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
+/* ── Mobile Grouped View ── */
+function MobileGroupedView({
+  groups,
+  collapsedGroups,
+  toggleGroup,
+  selectMode,
+  selected,
+  toggleSelect,
+  onApprove,
+  onReject,
+  onView,
+}: {
+  groups: { label: string; totalEntries: number; pendingCount: number; entries: ReviewEntry[] }[];
+  collapsedGroups: Set<string>;
+  toggleGroup: (label: string) => void;
+  selectMode: boolean;
+  selected: Set<string>;
+  toggleSelect: (id: string) => void;
+  onApprove: (id: string) => void;
+  onReject: (id: string) => void;
+  onView: (entry: ReviewEntry) => void;
+}) {
+  return (
+    <div className="space-y-ram-md">
+      {groups.map((group) => (
+        <div key={group.label}>
+          <button onClick={() => toggleGroup(group.label)} className="flex w-full items-center gap-ram-sm py-ram-md bg-gray-100 rounded-ram-md px-ram-lg mb-ram-sm">
+            {collapsedGroups.has(group.label) ? <ChevronRight className="h-4 w-4 text-gray-600" /> : <ChevronDown className="h-4 w-4 text-gray-600" />}
+            <span className="text-[15px] font-extrabold text-foreground">{group.label}</span>
+            <span className="text-text-xs text-gray-500 ml-auto">{group.totalEntries} entries, {group.pendingCount} pending</span>
+          </button>
+          {!collapsedGroups.has(group.label) && group.entries.map((entry) => (
+            <div key={entry.id} className="rounded-ram-md border border-border bg-card p-ram-lg mb-ram-sm">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-ram-md">
+                  {selectMode && (
+                    <input type="checkbox" checked={selected.has(entry.id)} onChange={() => toggleSelect(entry.id)} className="accent-brand-500" />
+                  )}
+                  <span className="text-text-xs text-gray-500">{entry.date}</span>
+                </div>
+                <StatusChip status={entry.status} />
+              </div>
+              <p className="mt-ram-sm text-[15px] font-extrabold text-foreground">{entry.logbook}</p>
+              <p className="text-text-sm text-gray-600">{entry.location}{entry.asset ? ` · ${entry.asset}` : ""}</p>
+              <p className="text-text-sm text-gray-500">{entry.operator}</p>
+              <div className="mt-ram-lg flex gap-ram-md">
+                <button onClick={() => onApprove(entry.id)} className="p-ram-md text-success-400 hover:bg-success-100 rounded-ram-xs"><CheckCircle className="h-5 w-5" /></button>
+                <button onClick={() => onReject(entry.id)} className="p-ram-md text-error-600 hover:bg-error-100 rounded-ram-xs"><XCircle className="h-5 w-5" /></button>
+                <button onClick={() => onView(entry)} className="p-ram-md text-brand-500 hover:bg-brand-100 rounded-ram-xs"><Eye className="h-5 w-5" /></button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Desktop Grouped Table ── */
+function DesktopGroupedTable({
+  groups,
+  collapsedGroups,
+  toggleGroup,
+  filteredEntries,
+  selected,
+  setSelected,
+  toggleSelect,
+  onApprove,
+  onReject,
+  onView,
+}: {
+  groups: { label: string; totalEntries: number; pendingCount: number; entries: ReviewEntry[] }[];
+  collapsedGroups: Set<string>;
+  toggleGroup: (label: string) => void;
+  filteredEntries: ReviewEntry[];
+  selected: Set<string>;
+  setSelected: (s: Set<string>) => void;
+  toggleSelect: (id: string) => void;
+  onApprove: (id: string) => void;
+  onReject: (id: string) => void;
+  onView: (entry: ReviewEntry) => void;
+}) {
+  return (
+    <div className="rounded-ram-md border border-border overflow-hidden">
+      <table className="w-full">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="w-10 px-ram-lg py-ram-lg"><input type="checkbox" onChange={(e) => { if (e.target.checked) setSelected(new Set(filteredEntries.map(r => r.id))); else setSelected(new Set()); }} className="accent-brand-500" /></th>
+            <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Date</th>
+            <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Logbook</th>
+            <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Location</th>
+            <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Asset</th>
+            <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Operator</th>
+            <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Status</th>
+            <th className="w-20 px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {groups.map((group) => (
+            <GroupRows
+              key={group.label}
+              group={group}
+              collapsed={collapsedGroups.has(group.label)}
+              onToggle={() => toggleGroup(group.label)}
+              selected={selected}
+              onToggleSelect={toggleSelect}
+              onApprove={onApprove}
+              onReject={onReject}
+              onView={onView}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ── Group Rows (table) ── */
 interface GroupRowsProps {
   group: { label: string; totalEntries: number; pendingCount: number; entries: ReviewEntry[] };
   collapsed: boolean;

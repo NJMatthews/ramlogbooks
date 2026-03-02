@@ -354,23 +354,6 @@ export default function TemplateDetail() {
         </div>
       </RAMDrawer>
 
-      {/* Version Modal */}
-      {versionModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/60">
-          <div className="mx-ram-xl max-w-md rounded-ram-xl bg-card p-ram-3xl shadow-ram-lg">
-            <h3 className="text-text-lg font-extrabold text-foreground">Create New Version</h3>
-            <p className="mt-ram-lg text-text-sm text-gray-600">
-              Version management is available in the full release. New versions lock existing entries on their original format and apply the new format to all future entries.
-            </p>
-            <button
-              onClick={() => setVersionModalOpen(false)}
-              className="mt-ram-xl w-full rounded-ram-md bg-brand-500 py-ram-lg text-text-md font-extrabold text-primary-foreground"
-            >
-              Got It
-            </button>
-          </div>
-        </div>
-      )}
 
 
       <CreateMethodDrawer open={methodDrawerOpen} onClose={() => setMethodDrawerOpen(false)} />

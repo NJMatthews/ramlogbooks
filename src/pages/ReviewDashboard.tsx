@@ -9,13 +9,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { getEntriesBySlice, mockReviewEntries, type ReviewEntry, type ReviewStatus } from "@/data/mockAssets";
 import { cn } from "@/lib/utils";
 
-type SliceMode = "logbook" | "location" | "asset";
 type DateRange = "today" | "7days" | "30days";
 type StatusFilter = "all" | ReviewStatus;
 
 export default function ReviewDashboard() {
   const isMobile = useIsMobile();
-  const [slice, setSlice] = useState<SliceMode>("logbook");
+  
   const [dateRange, setDateRange] = useState<DateRange>("7days");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");
@@ -40,10 +39,9 @@ export default function ReviewDashboard() {
   const groups = useMemo(() => {
     const groupMap = new Map<string, ReviewEntry[]>();
     for (const e of filteredEntries) {
-      let key: string;
-      if (slice === "logbook") key = e.logbook;
-      else if (slice === "location") key = e.location;
-      else key = e.asset ?? "Location-Level Logs";
+      const key = e.asset
+        ? `${e.logbook} · ${e.asset}`
+        : `${e.logbook} · Location-Level`;
       const arr = groupMap.get(key) ?? [];
       arr.push(e);
       groupMap.set(key, arr);
@@ -54,7 +52,7 @@ export default function ReviewDashboard() {
       pendingCount: entries.filter((e) => e.status === "pending-review").length,
       entries,
     }));
-  }, [filteredEntries, slice]);
+  }, [filteredEntries]);
 
   const stats = useMemo(() => ({
     pending: entries.filter((e) => e.status === "pending-review").length,
@@ -101,12 +99,6 @@ export default function ReviewDashboard() {
     setDetailEntry(null);
   };
 
-  const sliceOptions: { value: SliceMode; label: string }[] = [
-    { value: "logbook", label: "By Logbook" },
-    { value: "location", label: "By Location" },
-    { value: "asset", label: "By Asset" },
-  ];
-
   const statusOptions: { value: StatusFilter; label: string }[] = [
     { value: "all", label: "All" },
     { value: "pending-review", label: "Pending" },
@@ -142,24 +134,6 @@ export default function ReviewDashboard() {
 
       <div className="flex-1 overflow-y-auto">
         <div className="px-ram-xl py-ram-xl space-y-ram-xl">
-          {/* Slice selector */}
-          <div className="flex gap-ram-sm">
-            {sliceOptions.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setSlice(opt.value)}
-                className={cn(
-                  "rounded-full px-ram-xl py-ram-md text-text-sm font-medium transition-colors border",
-                  slice === opt.value
-                    ? "bg-brand-500 text-primary-foreground border-brand-500"
-                    : "bg-card text-gray-600 border-border"
-                )}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-
           {/* Filters */}
           <div className="flex flex-wrap items-center gap-ram-md">
             <select

@@ -26,6 +26,8 @@ export default function TemplateDetail() {
   const [addFieldOpen, setAddFieldOpen] = useState(false);
   const [versionModalOpen, setVersionModalOpen] = useState(false);
   const [methodDrawerOpen, setMethodDrawerOpen] = useState(false);
+  const [viewingVersion, setViewingVersion] = useState<TemplateVersion | null>(null);
+  const [revertConfirmVersion, setRevertConfirmVersion] = useState<TemplateVersion | null>(null);
 
   // Add field drawer state
   const [newFieldName, setNewFieldName] = useState("");

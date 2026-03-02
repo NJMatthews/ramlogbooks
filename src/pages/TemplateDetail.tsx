@@ -369,6 +369,9 @@ export default function TemplateDetail() {
           </div>
         </div>
       )}
+
+
+      <CreateMethodDrawer open={methodDrawerOpen} onClose={() => setMethodDrawerOpen(false)} />
     </AppLayout>
   );
 }

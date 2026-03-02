@@ -3,7 +3,7 @@ import { RAMDrawer } from "./RAMDrawer";
 import { PinInput } from "./PinInput";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Nfc, QrCode, ScanLine, Check, Loader2, Wifi } from "lucide-react";
+import { Nfc, QrCode, ScanLine, Check, Wifi } from "lucide-react";
 
 interface ESignDrawerProps {
   open: boolean;
@@ -165,18 +165,111 @@ export function ESignDrawer({ open, onClose, onSign }: ESignDrawerProps) {
         </div>
       )}
 
-      {/* Scanning animation */}
-      {phase === "scanning" && (
-        <div className="flex flex-col items-center gap-ram-xl py-ram-3xl animate-fade-in">
-          <div className="relative">
-            <div className="h-20 w-20 rounded-full border-4 border-brand-200 flex items-center justify-center">
-              <Loader2 className="h-10 w-10 text-brand-500 animate-spin" />
+      {/* Scanning animation — Barcode / QR */}
+      {phase === "scanning" && authMethod === "barcode" && (
+        <div className="flex flex-col items-center gap-ram-xl py-ram-2xl animate-fade-in">
+          {/* Camera viewfinder */}
+          <div className="relative h-48 w-48 rounded-ram-xl bg-[hsl(220,20%,12%)] overflow-hidden flex items-center justify-center">
+            {/* Corner brackets */}
+            <div className="absolute top-3 left-3 h-8 w-8 border-t-[3px] border-l-[3px] border-brand-400 rounded-tl-md" />
+            <div className="absolute top-3 right-3 h-8 w-8 border-t-[3px] border-r-[3px] border-brand-400 rounded-tr-md" />
+            <div className="absolute bottom-3 left-3 h-8 w-8 border-b-[3px] border-l-[3px] border-brand-400 rounded-bl-md" />
+            <div className="absolute bottom-3 right-3 h-8 w-8 border-b-[3px] border-r-[3px] border-brand-400 rounded-br-md" />
+
+            {/* QR code icon */}
+            <QrCode className="h-16 w-16 text-white/30" />
+
+            {/* Sweeping scan line */}
+            <div
+              className="absolute left-3 right-3 h-0.5 bg-gradient-to-r from-transparent via-brand-400 to-transparent"
+              style={{
+                animation: "scan-sweep 1.8s ease-in-out infinite",
+              }}
+            />
+
+            {/* Flash effect on "capture" */}
+            <div
+              className="absolute inset-0 bg-white"
+              style={{
+                animation: "camera-flash 2s ease-out forwards",
+              }}
+            />
+
+            {/* REC indicator */}
+            <div className="absolute top-3.5 right-12 flex items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-[10px] font-bold text-red-400 tracking-wider">REC</span>
             </div>
           </div>
-          <p className="text-text-lg font-extrabold text-foreground">
-            {authMethod === "nfc" ? "Reading NFC badge..." : "Scanning barcode..."}
-          </p>
-          <p className="text-text-sm text-gray-500">Hold steady</p>
+
+          <p className="text-text-lg font-extrabold text-foreground">Scanning barcode…</p>
+          <p className="text-text-sm text-gray-500">Hold badge steady in front of camera</p>
+
+          {/* CSS for scan animations */}
+          <style>{`
+            @keyframes scan-sweep {
+              0%, 100% { top: 12px; }
+              50% { top: calc(100% - 12px); }
+            }
+            @keyframes camera-flash {
+              0% { opacity: 0; }
+              85% { opacity: 0; }
+              90% { opacity: 0.7; }
+              100% { opacity: 0; }
+            }
+          `}</style>
+        </div>
+      )}
+
+      {/* Scanning animation — NFC Tap */}
+      {phase === "scanning" && authMethod === "nfc" && (
+        <div className="flex flex-col items-center gap-ram-xl py-ram-2xl animate-fade-in">
+          {/* Phone outline with NFC zone */}
+          <div className="relative h-56 w-32">
+            {/* Phone body */}
+            <div className="absolute inset-0 rounded-[20px] border-[3px] border-gray-300 bg-[hsl(210,20%,97%)]">
+              {/* Notch */}
+              <div className="mx-auto mt-2 h-1.5 w-10 rounded-full bg-gray-300" />
+              {/* Screen */}
+              <div className="mx-2 mt-3 h-[calc(100%-40px)] rounded-xl bg-[hsl(220,20%,12%)] flex items-center justify-center overflow-hidden">
+                <Wifi className="h-8 w-8 text-brand-400 animate-pulse" />
+              </div>
+              {/* Home bar */}
+              <div className="mx-auto mt-1.5 h-1 w-8 rounded-full bg-gray-300" />
+            </div>
+
+            {/* NFC zone highlight — pulsing circle at top-back of phone */}
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+              <div className="relative flex items-center justify-center">
+                <span className="absolute h-16 w-16 rounded-full border-2 border-brand-300 animate-ping opacity-30" />
+                <span className="absolute h-12 w-12 rounded-full border border-brand-300 opacity-40" style={{ animation: "ping 1.5s cubic-bezier(0,0,0.2,1) infinite 0.3s" }} />
+                <span className="h-8 w-8 rounded-full bg-brand-500/20 border-2 border-brand-400 flex items-center justify-center">
+                  <Nfc className="h-4 w-4 text-brand-500" />
+                </span>
+              </div>
+            </div>
+
+            {/* Tap arrow animation */}
+            <div
+              className="absolute -right-14 top-2 flex items-center gap-1 text-brand-500"
+              style={{ animation: "tap-bounce 1.2s ease-in-out infinite" }}
+            >
+              <span className="text-text-xs font-extrabold">TAP HERE</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l-7 7 7 7" />
+              </svg>
+            </div>
+          </div>
+
+          <p className="text-text-lg font-extrabold text-foreground">Ready to tap…</p>
+          <p className="text-text-sm text-gray-500">Hold your badge near the top of the device</p>
+
+          <style>{`
+            @keyframes tap-bounce {
+              0%, 100% { transform: translateX(0); }
+              50% { transform: translateX(-6px); }
+            }
+          `}</style>
         </div>
       )}
 

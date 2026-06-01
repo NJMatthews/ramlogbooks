@@ -61,6 +61,11 @@ export type ReviewStatus = "pending-review" | "approved" | "rejected" | "correct
 export interface AuditTrailEntry {
   action: string;
   timestamp: string;
+  actor?: string;
+  priorValue?: string;
+  newValue?: string;
+  reasonCode?: string;
+  hash?: string;
 }
 
 export interface ReviewEntryField {
@@ -68,6 +73,8 @@ export interface ReviewEntryField {
   value: string;
   preFilled?: boolean;
   modified?: { from: string; to: string };
+  verdict?: "pass" | "fail";
+  trace?: string;
 }
 
 export interface ReviewEntry {
@@ -81,6 +88,16 @@ export interface ReviewEntry {
   version: string;
   fields: ReviewEntryField[];
   auditTrail: AuditTrailEntry[];
+  hasException?: boolean;
+  slaBreached?: boolean;
+  hoursOpen?: number;
+  assignee?: string;
+  site?: string;
+  capturedAt?: string;
+  syncedAt?: string;
+  templateHash?: string;
+  linkedWorkRequest?: string;
+  signatureMeaning?: "Performed" | "Verified" | "Reviewed";
 }
 
 // ── Mock Data ───────────────────────────────────────────────

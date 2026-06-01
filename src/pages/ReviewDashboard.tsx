@@ -88,6 +88,9 @@ export default function ReviewDashboard() {
     approved: entries.filter((e) => e.status === "approved").length,
     rejected: entries.filter((e) => e.status === "rejected").length,
     total: entries.length,
+    exceptions: entries.filter((e) => e.hasException && e.status === "pending-review").length,
+    overdue: entries.filter((e) => e.slaBreached && e.status === "pending-review").length,
+    mine: entries.filter((e) => e.assignee === CURRENT_USER && e.status === "pending-review").length,
   }), [entries]);
 
   const toggleGroup = (label: string) => {

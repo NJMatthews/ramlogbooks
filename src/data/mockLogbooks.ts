@@ -9,6 +9,13 @@ export interface Logbook {
   format?: "digital" | "paper";
 }
 
+export interface FieldLimits {
+  min?: number;
+  max?: number;
+  /** Optional friendly description of the criteria, e.g. "Action limit 18–24 °C" */
+  description?: string;
+}
+
 export interface FormField {
   id: string;
   label: string;
@@ -18,6 +25,10 @@ export interface FormField {
   timeSensitive: boolean;
   unit?: string;
   readOnly?: boolean;
+  /** Evaluation Service-style numeric limits, evaluated on-device */
+  limits?: FieldLimits;
+  /** For toggle fields, declares which state passes the criterion */
+  passWhen?: "pass" | "fail";
 }
 
 export type FieldType = "Text" | "Number" | "Date" | "Time" | "Text Area" | "Toggle";
@@ -95,13 +106,13 @@ export const cleanRoomFormFields: FormField[] = [
   { id: "datetime", label: "Date/Time", type: "datetime", value: "", prefilled: false, timeSensitive: false },
   { id: "operator", label: "Operator", type: "text", value: "", prefilled: false, timeSensitive: false },
   { id: "room", label: "Room", type: "text", value: "", prefilled: false, timeSensitive: false },
-  { id: "temperature", label: "Temperature (°C)", type: "number", value: "", prefilled: false, timeSensitive: false, unit: "°C" },
-  { id: "humidity", label: "Humidity (%RH)", type: "number", value: "", prefilled: false, timeSensitive: false, unit: "%RH" },
-  { id: "pressure", label: "Differential Pressure (Pa)", type: "number", value: "", prefilled: false, timeSensitive: false, unit: "Pa" },
-  { id: "particle05", label: "Particle Count (0.5µm)", type: "number", value: "", prefilled: false, timeSensitive: false },
-  { id: "particle50", label: "Particle Count (5.0µm)", type: "number", value: "", prefilled: false, timeSensitive: false },
+  { id: "temperature", label: "Temperature (°C)", type: "number", value: "", prefilled: false, timeSensitive: false, unit: "°C", limits: { min: 18, max: 24, description: "Action limit 18.0–24.0 °C (ISO 14644)" } },
+  { id: "humidity", label: "Humidity (%RH)", type: "number", value: "", prefilled: false, timeSensitive: false, unit: "%RH", limits: { min: 30, max: 60, description: "Action limit 30–60 %RH" } },
+  { id: "pressure", label: "Differential Pressure (Pa)", type: "number", value: "", prefilled: false, timeSensitive: false, unit: "Pa", limits: { min: 5, max: 20, description: "Differential ≥ 5 Pa, ≤ 20 Pa" } },
+  { id: "particle05", label: "Particle Count (0.5µm)", type: "number", value: "", prefilled: false, timeSensitive: false, limits: { max: 3520, description: "ISO 7 limit ≤ 3,520 particles/m³" } },
+  { id: "particle50", label: "Particle Count (5.0µm)", type: "number", value: "", prefilled: false, timeSensitive: false, limits: { max: 29, description: "ISO 7 limit ≤ 29 particles/m³" } },
   { id: "observations", label: "Observations", type: "textarea", value: "", prefilled: false, timeSensitive: false },
-  { id: "status", label: "Status", type: "toggle", value: "pass", prefilled: false, timeSensitive: false },
+  { id: "status", label: "Status", type: "toggle", value: "pass", prefilled: false, timeSensitive: false, passWhen: "pass" },
 ];
 
 export const phConductivityFormFields: FormField[] = [

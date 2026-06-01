@@ -3,21 +3,32 @@ import { RAMDrawer } from "./RAMDrawer";
 import { PinInput } from "./PinInput";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Nfc, QrCode, ScanLine, Check, Wifi } from "lucide-react";
+import { Nfc, QrCode, ScanLine, Check, Wifi, PenLine, ShieldCheck, ClipboardCheck } from "lucide-react";
+
+export type SignatureMeaning = "performed" | "verified" | "reviewed";
 
 interface ESignDrawerProps {
   open: boolean;
   onClose: () => void;
-  onSign: () => void;
+  onSign: (meaning: SignatureMeaning) => void;
+  /** When true, force meaning to "performed" (e.g. an exception sign-off). */
+  forcedMeaning?: SignatureMeaning;
 }
 
 type AuthMethod = "nfc" | "barcode" | null;
-type AuthPhase = "badge" | "scanning" | "verified";
+type AuthPhase = "meaning" | "badge" | "scanning" | "verified";
 
-export function ESignDrawer({ open, onClose, onSign }: ESignDrawerProps) {
+const MEANINGS: { id: SignatureMeaning; label: string; description: string; icon: typeof PenLine }[] = [
+  { id: "performed", label: "Performed", description: "I performed this work and recorded the values.", icon: PenLine },
+  { id: "verified", label: "Verified", description: "I witnessed the work or independently checked the values.", icon: ShieldCheck },
+  { id: "reviewed", label: "Reviewed", description: "I reviewed the entry for completeness and compliance.", icon: ClipboardCheck },
+];
+
+export function ESignDrawer({ open, onClose, onSign, forcedMeaning }: ESignDrawerProps) {
   const [pinComplete, setPinComplete] = useState(false);
   const [authMethod, setAuthMethod] = useState<AuthMethod>(null);
-  const [phase, setPhase] = useState<AuthPhase>("badge");
+  const [meaning, setMeaning] = useState<SignatureMeaning | null>(forcedMeaning ?? null);
+  const [phase, setPhase] = useState<AuthPhase>(forcedMeaning ? "badge" : "meaning");
 
   const handleBadgeScan = (method: AuthMethod) => {
     setAuthMethod(method);
@@ -27,18 +38,26 @@ export function ESignDrawer({ open, onClose, onSign }: ESignDrawerProps) {
     }, 2000);
   };
 
-  const handleSign = () => {
-    onSign();
+  const reset = () => {
     setPinComplete(false);
     setAuthMethod(null);
-    setPhase("badge");
+    setMeaning(forcedMeaning ?? null);
+    setPhase(forcedMeaning ? "badge" : "meaning");
+  };
+
+  const handleSign = () => {
+    if (meaning) onSign(meaning);
+    reset();
   };
 
   const handleClose = () => {
-    setPinComplete(false);
-    setAuthMethod(null);
-    setPhase("badge");
+    reset();
     onClose();
+  };
+
+  const selectMeaning = (m: SignatureMeaning) => {
+    setMeaning(m);
+    setPhase("badge");
   };
 
   return (
@@ -46,7 +65,9 @@ export function ESignDrawer({ open, onClose, onSign }: ESignDrawerProps) {
       open={open}
       onClose={handleClose}
       title={
-        phase === "badge"
+        phase === "meaning"
+          ? "Sign as…"
+          : phase === "badge"
           ? "Badge Verification"
           : phase === "scanning"
           ? "Scanning..."
@@ -71,11 +92,37 @@ export function ESignDrawer({ open, onClose, onSign }: ESignDrawerProps) {
         )
       }
     >
+      {/* Meaning phase: pick Performed / Verified / Reviewed */}
+      {phase === "meaning" && (
+        <div className="flex flex-col gap-ram-lg py-ram-md animate-fade-in">
+          <p className="text-text-md text-gray-600">
+            Choose the meaning of your signature. This is recorded in the audit trail and is binding under 21 CFR Part 11.
+          </p>
+          <div className="space-y-ram-md">
+            {MEANINGS.map((m) => (
+              <button
+                key={m.id}
+                onClick={() => selectMeaning(m.id)}
+                className="flex w-full items-center gap-ram-lg rounded-ram-md border border-border bg-card p-ram-lg text-left hover:border-brand-500 hover:shadow-ram-sm transition-all"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100">
+                  <m.icon className="h-5 w-5 text-brand-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-text-md font-extrabold text-foreground">{m.label}</p>
+                  <p className="text-text-xs text-gray-600">{m.description}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Badge phase: PIN + scan/tap in one view */}
       {phase === "badge" && (
         <div className="flex flex-col items-center gap-ram-xl py-ram-md animate-fade-in">
           <p className="text-text-md text-gray-600 text-center">
-            Verify your identity to sign this entry
+            Verify your identity to sign as <b className="text-foreground">{meaning ? MEANINGS.find((x) => x.id === meaning)?.label : ""}</b>
           </p>
 
           {/* PIN Section */}
@@ -280,10 +327,16 @@ export function ESignDrawer({ open, onClose, onSign }: ESignDrawerProps) {
             <Check className="h-10 w-10 text-success-400" />
           </div>
           <h3 className="text-text-lg font-extrabold text-foreground">Identity Verified</h3>
-          <div className="rounded-ram-md border border-gray-200 bg-gray-50 p-ram-xl w-full max-w-[280px]">
+          <div className="rounded-ram-md border border-gray-200 bg-gray-50 p-ram-xl w-full max-w-[280px] space-y-1">
             <p className="text-text-sm text-gray-500">Operator</p>
             <p className="text-text-md font-extrabold text-foreground">John Smith</p>
-            <p className="text-text-xs text-gray-400 mt-ram-xxs">Badge #4521 • {authMethod === "nfc" ? "NFC" : "Barcode"} verified</p>
+            <p className="text-text-xs text-gray-400">Badge #4521 • {authMethod === "nfc" ? "NFC" : "Barcode"} verified</p>
+            {meaning && (
+              <div className="mt-2 pt-2 border-t border-gray-200">
+                <p className="text-text-xs text-gray-500">Signature meaning</p>
+                <p className="text-text-sm font-extrabold text-brand-500">{MEANINGS.find((m) => m.id === meaning)?.label}</p>
+              </div>
+            )}
           </div>
           <p className="text-text-xs text-gray-400 text-center">
             Signed at {new Date().toLocaleTimeString()}

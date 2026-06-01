@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AppLayout } from "@/components/ram/AppLayout";
 import { HeaderNav } from "@/components/ram/HeaderNav";
@@ -6,13 +6,16 @@ import { RAMInput } from "@/components/ram/RAMInput";
 import { RAMTextarea } from "@/components/ram/RAMTextarea";
 import { RAMToggle } from "@/components/ram/RAMToggle";
 import { PaperEntryForm } from "@/components/ram/PaperEntryForm";
-import { ESignDrawer } from "@/components/ram/ESignDrawer";
+import { ESignDrawer, type SignatureMeaning } from "@/components/ram/ESignDrawer";
+import { ExceptionDrawer } from "@/components/ram/ExceptionDrawer";
 import { SuccessDrawer } from "@/components/ram/SuccessDrawer";
+import { FieldVerdict } from "@/components/ram/FieldVerdict";
 import { Button } from "@/components/ui/button";
 import { useLogbook } from "@/hooks/useLogbookState";
 import { mockLogbooks } from "@/data/mockLogbooks";
 import { useDeviceLocation } from "@/hooks/useDeviceLocation";
-import { Calendar, Zap, Clock, ArrowRight } from "lucide-react";
+import { evaluateField, failedFields } from "@/lib/evaluation";
+import { Calendar, Zap, Clock, ArrowRight, AlertTriangle } from "lucide-react";
 
 // Simulated "last entry" values for Quick Fill
 const lastEntryValues: Record<string, string> = {
@@ -37,6 +40,12 @@ const lastEntryMeta = {
   ],
 };
 
+const MEANING_LABELS: Record<SignatureMeaning, string> = {
+  performed: "Performed",
+  verified: "Verified",
+  reviewed: "Reviewed",
+};
+
 export default function LogbookEntryForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -45,14 +54,47 @@ export default function LogbookEntryForm() {
   const logbook = logbooks.find((l) => l.id === id) ?? mockLogbooks.find((l) => l.id === id);
   const isPaper = logbook?.format === "paper";
   const [quickFillDismissed, setQuickFillDismissed] = useState(false);
+  const [exceptionOpen, setExceptionOpen] = useState(false);
+  const [exceptionAck, setExceptionAck] = useState<{ impact: string; attached: boolean } | null>(null);
+  const [lastMeaning, setLastMeaning] = useState<SignatureMeaning>("performed");
+  const [draftedWR, setDraftedWR] = useState<string | null>(null);
 
   const hasAnyValue = state.formFields.some((f) => f.value.trim() !== "" && f.type !== "toggle");
+
+  const failures = useMemo(() => failedFields(state.formFields), [state.formFields]);
+  const hasFailures = failures.length > 0;
 
   const handleQuickFill = () => {
     Object.entries(lastEntryValues).forEach(([fieldId, value]) => {
       dispatch({ type: "UPDATE_FIELD", fieldId, value });
     });
     setQuickFillDismissed(true);
+  };
+
+  const handlePrimary = () => {
+    if (hasFailures && !exceptionAck) {
+      setExceptionOpen(true);
+      return;
+    }
+    dispatch({ type: "OPEN_SIGN" });
+  };
+
+  const handleExceptionContinue = (payload: { impact: string; attached: boolean }) => {
+    setExceptionAck(payload);
+    setExceptionOpen(false);
+    dispatch({ type: "OPEN_SIGN" });
+  };
+
+  const handleSign = (meaning: SignatureMeaning) => {
+    setLastMeaning(meaning);
+    if (hasFailures) {
+      // Auto-draft a RAM work request — mock ID
+      const wr = `WR-${Math.floor(10000 + Math.random() * 89999)}`;
+      setDraftedWR(wr);
+    } else {
+      setDraftedWR(null);
+    }
+    dispatch({ type: "SIGN_ENTRY" });
   };
 
   return (
@@ -119,6 +161,7 @@ export default function LogbookEntryForm() {
             )}
 
             {state.formFields.map((field) => {
+              const ev = evaluateField(field);
               if (field.type === "textarea") {
                 return (
                   <RAMTextarea
@@ -133,27 +176,31 @@ export default function LogbookEntryForm() {
               }
               if (field.type === "toggle") {
                 return (
-                  <RAMToggle
-                    key={field.id}
-                    label={field.label}
-                    value={field.value === "pass"}
-                    onChange={(v) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v ? "pass" : "fail" })}
-                  />
+                  <div key={field.id} className="space-y-ram-sm">
+                    <RAMToggle
+                      label={field.label}
+                      value={field.value === "pass"}
+                      onChange={(v) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v ? "pass" : "fail" })}
+                    />
+                    <FieldVerdict field={field} evaluation={ev} />
+                  </div>
                 );
               }
               return (
-                <RAMInput
-                  key={field.id}
-                  label={field.label}
-                  value={field.value}
-                  onChange={(v) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v })}
-                  readOnly={field.readOnly}
-                  type={field.type === "number" ? "number" : "text"}
-                  leadingIcon={field.type === "datetime" ? <Calendar className="h-4 w-4" /> : undefined}
-                  needsConfirmation={field.timeSensitive && field.prefilled}
-                  confirmed={state.confirmedFields.has(field.id)}
-                  onConfirm={() => dispatch({ type: "CONFIRM_FIELD", fieldId: field.id })}
-                />
+                <div key={field.id} className="space-y-ram-sm">
+                  <RAMInput
+                    label={field.label}
+                    value={field.value}
+                    onChange={(v) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v })}
+                    readOnly={field.readOnly}
+                    type={field.type === "number" ? "number" : "text"}
+                    leadingIcon={field.type === "datetime" ? <Calendar className="h-4 w-4" /> : undefined}
+                    needsConfirmation={field.timeSensitive && field.prefilled}
+                    confirmed={state.confirmedFields.has(field.id)}
+                    onConfirm={() => dispatch({ type: "CONFIRM_FIELD", fieldId: field.id })}
+                  />
+                  <FieldVerdict field={field} evaluation={ev} />
+                </div>
               );
             })}
           </div>
@@ -162,27 +209,51 @@ export default function LogbookEntryForm() {
 
       {/* Sticky footer */}
       <div className="sticky bottom-0 border-t border-border bg-card px-ram-xl py-ram-xl shrink-0">
-        <div className="mx-auto max-w-[600px]">
+        <div className="mx-auto max-w-[600px] space-y-ram-md">
+          {hasFailures && (
+            <div className="flex items-center gap-2 rounded-ram-xs bg-error-600/10 border border-error-600/30 px-ram-md py-ram-sm text-text-xs text-error-600 font-extrabold">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              {failures.length} out-of-limit {failures.length === 1 ? "value" : "values"} · impact assessment required
+            </div>
+          )}
           <Button
-            onClick={() => dispatch({ type: "OPEN_SIGN" })}
-            className="w-full h-12 rounded-ram-md bg-brand-500 text-white font-extrabold text-lg hover:bg-brand-600"
+            onClick={handlePrimary}
+            className={`w-full h-12 rounded-ram-md text-white font-extrabold text-lg ${
+              hasFailures
+                ? "bg-error-600 hover:bg-error-600/90"
+                : "bg-brand-500 hover:bg-brand-600"
+            }`}
           >
-            Sign & Submit
+            {hasFailures ? "Sign with exception" : "Sign & Submit"}
           </Button>
         </div>
       </div>
 
+      <ExceptionDrawer
+        open={exceptionOpen}
+        failures={failures}
+        assetName={logbook?.location}
+        onClose={() => setExceptionOpen(false)}
+        onContinue={handleExceptionContinue}
+      />
+
       <ESignDrawer
         open={state.isSigning}
         onClose={() => dispatch({ type: "CLOSE_SIGN" })}
-        onSign={() => dispatch({ type: "SIGN_ENTRY" })}
+        onSign={handleSign}
+        forcedMeaning={hasFailures ? "performed" : undefined}
       />
 
       <SuccessDrawer
         open={state.showSuccess}
+        signatureMeaning={MEANING_LABELS[lastMeaning]}
+        workRequestId={draftedWR}
+        assetName={logbook?.location}
         onDone={() => {
           dispatch({ type: "HIDE_SUCCESS" });
           dispatch({ type: "RESET_FORM" });
+          setExceptionAck(null);
+          setDraftedWR(null);
           navigate("/");
         }}
       />

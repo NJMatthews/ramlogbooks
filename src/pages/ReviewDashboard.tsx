@@ -1,17 +1,21 @@
 import { useState, useMemo } from "react";
-import { Download, CheckCircle, XCircle, Eye, ChevronDown, ChevronRight, List, Grid3X3 } from "lucide-react";
+import { Download, CheckCircle, XCircle, Eye, ChevronDown, ChevronRight, List, Grid3X3, AlertTriangle, Clock, Wrench } from "lucide-react";
 import { AppLayout } from "@/components/ram/AppLayout";
 import { HeaderNav } from "@/components/ram/HeaderNav";
 import { SearchBar } from "@/components/ram/SearchBar";
 import { StatusChip } from "@/components/ram/StatusChip";
 import { EntryDetailDrawer } from "@/components/ram/EntryDetailDrawer";
+import { FilterChip } from "@/components/ram/FilterChip";
+import { ExportBundleModal } from "@/components/ram/ExportBundleModal";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getEntriesBySlice, mockReviewEntries, type ReviewEntry, type ReviewStatus } from "@/data/mockAssets";
+import { mockReviewEntries, type ReviewEntry, type ReviewStatus } from "@/data/mockAssets";
 import { cn } from "@/lib/utils";
 
 type DateRange = "today" | "7days" | "30days";
 type StatusFilter = "all" | ReviewStatus;
 type ViewMode = "grouped" | "grid";
+
+const CURRENT_USER = "N. Matthews";
 
 export default function ReviewDashboard() {
   const isMobile = useIsMobile();
@@ -26,17 +30,40 @@ export default function ReviewDashboard() {
   const [confirmAction, setConfirmAction] = useState<{ action: "approve" | "reject"; ids: string[] } | null>(null);
   const [entries, setEntries] = useState(mockReviewEntries);
   const [viewMode, setViewMode] = useState<ViewMode>("grouped");
+  // Phase B filter chips
+  const [showExceptions, setShowExceptions] = useState(false);
+  const [showOverdue, setShowOverdue] = useState(false);
+  const [showMine, setShowMine] = useState(false);
+  const [logbookFilter, setLogbookFilter] = useState<string>("all");
+  const [siteFilter, setSiteFilter] = useState<string>("all");
+  const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
+  const [exportOpen, setExportOpen] = useState(false);
+
+  const logbookOptions = useMemo(() => Array.from(new Set(entries.map((e) => e.logbook))).sort(), [entries]);
+  const siteOptions = useMemo(() => Array.from(new Set(entries.map((e) => e.site ?? e.location))).sort(), [entries]);
+  const assigneeOptions = useMemo(() => Array.from(new Set(entries.map((e) => e.assignee).filter(Boolean) as string[])).sort(), [entries]);
 
   const filteredEntries = useMemo(() => {
-    return entries.filter((e) => {
+    const out = entries.filter((e) => {
       if (statusFilter !== "all" && e.status !== statusFilter) return false;
+      if (showExceptions && !e.hasException) return false;
+      if (showOverdue && !e.slaBreached) return false;
+      if (showMine && e.assignee !== CURRENT_USER) return false;
+      if (logbookFilter !== "all" && e.logbook !== logbookFilter) return false;
+      if (siteFilter !== "all" && (e.site ?? e.location) !== siteFilter) return false;
+      if (assigneeFilter !== "all" && e.assignee !== assigneeFilter) return false;
       if (search) {
         const s = search.toLowerCase();
         if (!e.operator.toLowerCase().includes(s) && !e.logbook.toLowerCase().includes(s) && !(e.asset ?? "").toLowerCase().includes(s)) return false;
       }
       return true;
     });
-  }, [entries, statusFilter, search]);
+    // When Exceptions chip is active, sort oldest-exception-first by hoursOpen desc
+    if (showExceptions || showOverdue) {
+      out.sort((a, b) => (b.hoursOpen ?? 0) - (a.hoursOpen ?? 0));
+    }
+    return out;
+  }, [entries, statusFilter, search, showExceptions, showOverdue, showMine, logbookFilter, siteFilter, assigneeFilter]);
 
   const groups = useMemo(() => {
     const groupMap = new Map<string, ReviewEntry[]>();
@@ -61,6 +88,9 @@ export default function ReviewDashboard() {
     approved: entries.filter((e) => e.status === "approved").length,
     rejected: entries.filter((e) => e.status === "rejected").length,
     total: entries.length,
+    exceptions: entries.filter((e) => e.hasException && e.status === "pending-review").length,
+    overdue: entries.filter((e) => e.slaBreached && e.status === "pending-review").length,
+    mine: entries.filter((e) => e.assignee === CURRENT_USER && e.status === "pending-review").length,
   }), [entries]);
 
   const toggleGroup = (label: string) => {
@@ -123,7 +153,10 @@ export default function ReviewDashboard() {
                 {selectMode ? "Cancel" : "Select"}
               </button>
             )}
-            <button className="flex items-center gap-ram-sm rounded-ram-md border border-border px-ram-xl py-ram-md text-text-sm font-medium text-foreground hover:bg-muted transition-colors">
+            <button
+              onClick={() => setExportOpen(true)}
+              className="flex items-center gap-ram-sm rounded-ram-md border border-border px-ram-xl py-ram-md text-text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            >
               <Download className="h-4 w-4" />
               Export
             </button>
@@ -170,6 +203,28 @@ export default function ReviewDashboard() {
                 Details
               </button>
             </div>
+          </div>
+
+          {/* Filter chip row — Phase B */}
+          <div className="flex flex-wrap items-center gap-ram-sm">
+            <FilterChip label="Exceptions" active={showExceptions} count={stats.exceptions} onClick={() => setShowExceptions((v) => !v)} onClear={() => setShowExceptions(false)} />
+            <FilterChip label="Overdue (SLA)" active={showOverdue} count={stats.overdue} onClick={() => setShowOverdue((v) => !v)} onClear={() => setShowOverdue(false)} />
+            <FilterChip label="My logbooks" active={showMine} count={stats.mine} onClick={() => setShowMine((v) => !v)} onClear={() => setShowMine(false)} />
+            <select value={logbookFilter} onChange={(e) => setLogbookFilter(e.target.value)} className="h-8 rounded-full border border-gray-300 bg-card px-ram-md text-text-sm text-foreground">
+              <option value="all">All logbook types</option>
+              {logbookOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+            <select value={siteFilter} onChange={(e) => setSiteFilter(e.target.value)} className="h-8 rounded-full border border-gray-300 bg-card px-ram-md text-text-sm text-foreground">
+              <option value="all">All sites</option>
+              {siteOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+            <select value={assigneeFilter} onChange={(e) => setAssigneeFilter(e.target.value)} className="h-8 rounded-full border border-gray-300 bg-card px-ram-md text-text-sm text-foreground">
+              <option value="all">All assignees</option>
+              {assigneeOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+            {(showExceptions || showOverdue) && (
+              <span className="text-text-xs text-gray-500 ml-auto">Sorted oldest-exception first</span>
+            )}
           </div>
 
           {/* Clickable stat cards as filters */}
@@ -241,6 +296,19 @@ export default function ReviewDashboard() {
 
       {/* Entry detail drawer */}
       <EntryDetailDrawer entry={detailEntry} onClose={() => setDetailEntry(null)} onApprove={handleApprove} onReject={handleReject} />
+
+      <ExportBundleModal
+        open={exportOpen}
+        entries={filteredEntries}
+        scopeLabel={[
+          showExceptions && "Exceptions",
+          showOverdue && "Overdue",
+          logbookFilter !== "all" && logbookFilter,
+          siteFilter !== "all" && siteFilter,
+          assigneeFilter !== "all" && assigneeFilter,
+        ].filter(Boolean).join(" · ") || "Current view"}
+        onClose={() => setExportOpen(false)}
+      />
 
       {/* Confirm modal */}
       {confirmAction && (
@@ -341,9 +409,30 @@ function DetailGridView({
               <span className="text-text-xs text-gray-500">{entry.date}</span>
             </div>
 
+            {/* Flag row */}
+            {(entry.hasException || entry.slaBreached || entry.linkedWorkRequest) && (
+              <div className="mb-ram-sm flex flex-wrap items-center gap-ram-xs">
+                {entry.hasException && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-error-600/10 px-2 py-0.5 text-[10px] font-extrabold text-error-600">
+                    <AlertTriangle className="h-3 w-3" /> Exception
+                  </span>
+                )}
+                {entry.slaBreached && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-warning-400/10 px-2 py-0.5 text-[10px] font-extrabold text-warning-400">
+                    <Clock className="h-3 w-3" /> SLA · {entry.hoursOpen}h
+                  </span>
+                )}
+                {entry.linkedWorkRequest && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-extrabold text-brand-700">
+                    <Wrench className="h-3 w-3" /> {entry.linkedWorkRequest}
+                  </span>
+                )}
+              </div>
+            )}
+
             <p className="text-[15px] font-extrabold text-foreground">{entry.logbook}</p>
             <p className="text-text-sm text-gray-600">{entry.location}{entry.asset ? ` · ${entry.asset}` : ""}</p>
-            <p className="text-text-xs text-gray-500 mt-ram-xxs">{entry.operator}</p>
+            <p className="text-text-xs text-gray-500 mt-ram-xxs">{entry.operator}{entry.assignee ? ` → ${entry.assignee}` : ""}</p>
 
             {/* Entry fields preview */}
             {entry.fields && entry.fields.length > 0 && (
@@ -424,6 +513,20 @@ function MobileGroupedView({
               <p className="mt-ram-sm text-[15px] font-extrabold text-foreground">{entry.logbook}</p>
               <p className="text-text-sm text-gray-600">{entry.location}{entry.asset ? ` · ${entry.asset}` : ""}</p>
               <p className="text-text-sm text-gray-500">{entry.operator}</p>
+              {(entry.hasException || entry.slaBreached) && (
+                <div className="mt-ram-sm flex flex-wrap gap-ram-xs">
+                  {entry.hasException && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-error-600/10 px-2 py-0.5 text-[10px] font-extrabold text-error-600">
+                      <AlertTriangle className="h-3 w-3" /> Exception
+                    </span>
+                  )}
+                  {entry.slaBreached && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-warning-400/10 px-2 py-0.5 text-[10px] font-extrabold text-warning-400">
+                      <Clock className="h-3 w-3" /> SLA · {entry.hoursOpen}h
+                    </span>
+                  )}
+                </div>
+              )}
               <div className="mt-ram-lg flex gap-ram-md">
                 <button onClick={() => onApprove(entry.id)} className="p-ram-md text-success-400 hover:bg-success-100 rounded-ram-xs"><CheckCircle className="h-5 w-5" /></button>
                 <button onClick={() => onReject(entry.id)} className="p-ram-md text-error-600 hover:bg-error-100 rounded-ram-xs"><XCircle className="h-5 w-5" /></button>
@@ -537,7 +640,21 @@ function GroupRows({ group, collapsed, onToggle, selected, onToggleSelect, onApp
           <td className="px-ram-lg text-text-sm text-foreground">{entry.location}</td>
           <td className="px-ram-lg text-text-sm text-foreground">{entry.asset ?? "—"}</td>
           <td className="px-ram-lg text-text-sm text-foreground">{entry.operator}</td>
-          <td className="px-ram-lg"><StatusChip status={entry.status} /></td>
+          <td className="px-ram-lg">
+            <div className="flex items-center gap-ram-xs">
+              <StatusChip status={entry.status} />
+              {entry.hasException && (
+                <span title="Out-of-limit exception" className="inline-flex items-center rounded-full bg-error-600/10 p-0.5 text-error-600">
+                  <AlertTriangle className="h-3 w-3" />
+                </span>
+              )}
+              {entry.slaBreached && (
+                <span title={`SLA breached · ${entry.hoursOpen}h open`} className="inline-flex items-center rounded-full bg-warning-400/10 p-0.5 text-warning-400">
+                  <Clock className="h-3 w-3" />
+                </span>
+              )}
+            </div>
+          </td>
           <td className="px-ram-lg" onClick={(e) => e.stopPropagation()}>
             <div className="flex gap-ram-xxs">
               <button onClick={() => onApprove(entry.id)} className="p-1 text-success-400 hover:text-success-900"><CheckCircle className="h-4 w-4" /></button>

@@ -61,6 +61,11 @@ export type ReviewStatus = "pending-review" | "approved" | "rejected" | "correct
 export interface AuditTrailEntry {
   action: string;
   timestamp: string;
+  actor?: string;
+  priorValue?: string;
+  newValue?: string;
+  reasonCode?: string;
+  hash?: string;
 }
 
 export interface ReviewEntryField {
@@ -68,6 +73,8 @@ export interface ReviewEntryField {
   value: string;
   preFilled?: boolean;
   modified?: { from: string; to: string };
+  verdict?: "pass" | "fail";
+  trace?: string;
 }
 
 export interface ReviewEntry {
@@ -81,6 +88,16 @@ export interface ReviewEntry {
   version: string;
   fields: ReviewEntryField[];
   auditTrail: AuditTrailEntry[];
+  hasException?: boolean;
+  slaBreached?: boolean;
+  hoursOpen?: number;
+  assignee?: string;
+  site?: string;
+  capturedAt?: string;
+  syncedAt?: string;
+  templateHash?: string;
+  linkedWorkRequest?: string;
+  signatureMeaning?: "Performed" | "Verified" | "Reviewed";
 }
 
 // ── Mock Data ───────────────────────────────────────────────
@@ -180,27 +197,46 @@ const sampleAudit: AuditTrailEntry[] = [
   { action: "Submitted for review", timestamp: "06:15 AM" },
 ];
 
+const sampleFieldsWithException: ReviewEntryField[] = [
+  { label: "Date/Time", value: "Feb 27, 2026 06:15 AM", preFilled: true, verdict: "pass" },
+  { label: "Operator", value: "J. Martinez", preFilled: true },
+  { label: "Equipment ID", value: "RAM-3201", preFilled: true },
+  { label: "Temperature (°C)", value: "26.1", verdict: "fail", trace: "value (26.1) > max (24) — Action limit 18–24 °C" },
+  { label: "Humidity (%RH)", value: "48.0", verdict: "pass", trace: "30 ≤ value (48) ≤ 60" },
+  { label: "Pressure (Pa)", value: "12.5", verdict: "pass" },
+  { label: "Observations", value: "HVAC alarm triggered — supervisor notified" },
+];
+
+const richAudit = (operator: string): AuditTrailEntry[] => [
+  { action: "Entry created", timestamp: "06:14:02 AM", actor: operator, hash: "a3f1…9c2b" },
+  { action: "Field set: Temperature", timestamp: "06:14:48 AM", actor: operator, priorValue: "—", newValue: "26.1 °C" },
+  { action: "Exception acknowledged", timestamp: "06:15:11 AM", actor: operator, reasonCode: "OOL-IMPACT" },
+  { action: "E-signed (Performed)", timestamp: "06:15:34 AM", actor: operator, hash: "b8d2…41ee" },
+  { action: "Synced from offline queue", timestamp: "06:18:02 AM" },
+  { action: "Submitted for review", timestamp: "06:18:03 AM" },
+];
+
 export const mockReviewEntries: ReviewEntry[] = [
-  { id: "rev-01", date: "Feb 27, 2026 06:15", logbook: "Cleaning Log", location: "Bldg 3, Fl 2", asset: "Reactor R-201", operator: "J. Martinez", status: "pending-review", version: "v2.1", fields: sampleFields, auditTrail: sampleAudit },
-  { id: "rev-02", date: "Feb 27, 2026 06:10", logbook: "Temp Check", location: "Bldg 3, Fl 2", asset: "Reactor R-201", operator: "J. Martinez", status: "pending-review", version: "v1.2", fields: [], auditTrail: sampleAudit },
-  { id: "rev-03", date: "Feb 27, 2026 05:45", logbook: "Environmental Mon.", location: "Bldg 3, Fl 2", asset: null, operator: "A. Patel", status: "pending-review", version: "v1.0", fields: [], auditTrail: sampleAudit },
-  { id: "rev-04", date: "Feb 26, 2026 22:30", logbook: "Cleaning Log", location: "Bldg 3, Fl 2", asset: "Mixer M-105", operator: "K. Chen", status: "pending-review", version: "v2.1", fields: [], auditTrail: sampleAudit },
-  { id: "rev-05", date: "Feb 26, 2026 22:15", logbook: "Calibration Log", location: "Lab A", asset: "pH Meter PH-03", operator: "K. Chen", status: "approved", version: "v3.0", fields: [], auditTrail: sampleAudit },
-  { id: "rev-06", date: "Feb 26, 2026 18:00", logbook: "Cleaning Log", location: "Bldg 3, Fl 2", asset: "Reactor R-201", operator: "J. Martinez", status: "approved", version: "v2.1", fields: sampleFields, auditTrail: sampleAudit },
-  { id: "rev-07", date: "Feb 26, 2026 17:45", logbook: "Temp Check", location: "Bldg 3, Fl 2", asset: "Centrifuge C-042", operator: "A. Patel", status: "approved", version: "v1.2", fields: [], auditTrail: sampleAudit },
-  { id: "rev-08", date: "Feb 26, 2026 14:30", logbook: "Environmental Mon.", location: "Bldg 3, Fl 2", asset: null, operator: "J. Martinez", status: "approved", version: "v1.0", fields: [], auditTrail: sampleAudit },
-  { id: "rev-09", date: "Feb 26, 2026 14:00", logbook: "Cleaning Log", location: "Production S-1", asset: "Tablet Press T-1", operator: "R. Kim", status: "approved", version: "v2.1", fields: [], auditTrail: sampleAudit },
-  { id: "rev-10", date: "Feb 26, 2026 10:15", logbook: "Vibration Check", location: "Bldg 3, Fl 2", asset: "Centrifuge C-042", operator: "K. Chen", status: "rejected", version: "v1.0", fields: [], auditTrail: sampleAudit },
-  { id: "rev-11", date: "Feb 26, 2026 10:00", logbook: "Calibration Log", location: "Bldg 3, Fl 2", asset: "Reactor R-201", operator: "K. Chen", status: "approved", version: "v3.0", fields: [], auditTrail: sampleAudit },
-  { id: "rev-12", date: "Feb 26, 2026 06:20", logbook: "Cleaning Log", location: "Bldg 3, Fl 2", asset: "Reactor R-201", operator: "A. Patel", status: "approved", version: "v2.1", fields: sampleFields, auditTrail: sampleAudit },
-  { id: "rev-13", date: "Feb 26, 2026 06:15", logbook: "Temp Check", location: "Bldg 3, Fl 2", asset: "Reactor R-201", operator: "A. Patel", status: "approved", version: "v1.2", fields: [], auditTrail: sampleAudit },
-  { id: "rev-14", date: "Feb 26, 2026 05:50", logbook: "Environmental Mon.", location: "Bldg 3, Fl 2", asset: null, operator: "A. Patel", status: "approved", version: "v1.0", fields: [], auditTrail: sampleAudit },
-  { id: "rev-15", date: "Feb 25, 2026 22:30", logbook: "Cleaning Log", location: "Bldg 3, Fl 2", asset: "Mixer M-105", operator: "J. Martinez", status: "approved", version: "v2.1", fields: [], auditTrail: sampleAudit },
-  { id: "rev-16", date: "Feb 25, 2026 18:00", logbook: "Cleaning Log", location: "Lab A", asset: "Spectro S-01", operator: "K. Chen", status: "approved", version: "v2.1", fields: [], auditTrail: sampleAudit },
-  { id: "rev-17", date: "Feb 25, 2026 14:30", logbook: "Calibration Log", location: "Lab A", asset: "pH Meter PH-03", operator: "R. Kim", status: "approved", version: "v3.0", fields: [], auditTrail: sampleAudit },
-  { id: "rev-18", date: "Feb 25, 2026 14:00", logbook: "Temp Check", location: "Bldg 3, Fl 2", asset: "Centrifuge C-042", operator: "A. Patel", status: "approved", version: "v1.2", fields: [], auditTrail: sampleAudit },
-  { id: "rev-19", date: "Feb 25, 2026 10:00", logbook: "Environmental Mon.", location: "Bldg 3, Fl 2", asset: null, operator: "J. Martinez", status: "approved", version: "v1.0", fields: [], auditTrail: sampleAudit },
-  { id: "rev-20", date: "Feb 25, 2026 06:00", logbook: "Cleaning Log", location: "Bldg 3, Fl 2", asset: "Reactor R-201", operator: "K. Chen", status: "rejected", version: "v2.1", fields: sampleFields, auditTrail: sampleAudit },
+  { id: "rev-01", date: "Feb 27, 2026 06:15", logbook: "Cleaning Log", location: "Bldg 3, Fl 2", site: "Building 3", asset: "Reactor R-201", operator: "J. Martinez", assignee: "N. Matthews", status: "pending-review", version: "v2.1", templateHash: "tpl-001@v2.1#a3f1", capturedAt: "06:15:34 AM (offline)", syncedAt: "06:18:02 AM", hoursOpen: 26, slaBreached: true, hasException: true, linkedWorkRequest: "WR-48211", fields: sampleFieldsWithException, auditTrail: richAudit("J. Martinez"), signatureMeaning: "Performed" },
+  { id: "rev-02", date: "Feb 27, 2026 06:10", logbook: "Temp Check", location: "Bldg 3, Fl 2", site: "Building 3", asset: "Reactor R-201", operator: "J. Martinez", assignee: "N. Matthews", status: "pending-review", version: "v1.2", hoursOpen: 26, slaBreached: true, fields: [], auditTrail: sampleAudit },
+  { id: "rev-03", date: "Feb 27, 2026 05:45", logbook: "Environmental Mon.", location: "Bldg 3, Fl 2", site: "Building 3", asset: null, operator: "A. Patel", assignee: "N. Matthews", status: "pending-review", version: "v1.0", hoursOpen: 27, slaBreached: true, hasException: true, fields: [], auditTrail: sampleAudit },
+  { id: "rev-04", date: "Feb 26, 2026 22:30", logbook: "Cleaning Log", location: "Bldg 3, Fl 2", site: "Building 3", asset: "Mixer M-105", operator: "K. Chen", assignee: "N. Matthews", status: "pending-review", version: "v2.1", hoursOpen: 10, fields: [], auditTrail: sampleAudit },
+  { id: "rev-05", date: "Feb 26, 2026 22:15", logbook: "Calibration Log", location: "Lab A", site: "Lab A", asset: "pH Meter PH-03", operator: "K. Chen", assignee: "R. Kim", status: "approved", version: "v3.0", fields: [], auditTrail: sampleAudit },
+  { id: "rev-06", date: "Feb 26, 2026 18:00", logbook: "Cleaning Log", location: "Bldg 3, Fl 2", site: "Building 3", asset: "Reactor R-201", operator: "J. Martinez", assignee: "N. Matthews", status: "approved", version: "v2.1", fields: sampleFields, auditTrail: sampleAudit },
+  { id: "rev-07", date: "Feb 26, 2026 17:45", logbook: "Temp Check", location: "Bldg 3, Fl 2", site: "Building 3", asset: "Centrifuge C-042", operator: "A. Patel", assignee: "N. Matthews", status: "approved", version: "v1.2", fields: [], auditTrail: sampleAudit },
+  { id: "rev-08", date: "Feb 26, 2026 14:30", logbook: "Environmental Mon.", location: "Bldg 3, Fl 2", site: "Building 3", asset: null, operator: "J. Martinez", assignee: "N. Matthews", status: "approved", version: "v1.0", fields: [], auditTrail: sampleAudit },
+  { id: "rev-09", date: "Feb 26, 2026 14:00", logbook: "Cleaning Log", location: "Production S-1", site: "Production Suite 1", asset: "Tablet Press T-1", operator: "R. Kim", assignee: "N. Matthews", status: "approved", version: "v2.1", fields: [], auditTrail: sampleAudit },
+  { id: "rev-10", date: "Feb 26, 2026 10:15", logbook: "Vibration Check", location: "Bldg 3, Fl 2", site: "Building 3", asset: "Centrifuge C-042", operator: "K. Chen", assignee: "N. Matthews", status: "rejected", version: "v1.0", fields: [], auditTrail: sampleAudit },
+  { id: "rev-11", date: "Feb 26, 2026 10:00", logbook: "Calibration Log", location: "Bldg 3, Fl 2", site: "Building 3", asset: "Reactor R-201", operator: "K. Chen", assignee: "N. Matthews", status: "approved", version: "v3.0", fields: [], auditTrail: sampleAudit },
+  { id: "rev-12", date: "Feb 26, 2026 06:20", logbook: "Cleaning Log", location: "Bldg 3, Fl 2", site: "Building 3", asset: "Reactor R-201", operator: "A. Patel", assignee: "N. Matthews", status: "approved", version: "v2.1", fields: sampleFields, auditTrail: sampleAudit },
+  { id: "rev-13", date: "Feb 26, 2026 06:15", logbook: "Temp Check", location: "Bldg 3, Fl 2", site: "Building 3", asset: "Reactor R-201", operator: "A. Patel", assignee: "N. Matthews", status: "approved", version: "v1.2", fields: [], auditTrail: sampleAudit },
+  { id: "rev-14", date: "Feb 26, 2026 05:50", logbook: "Environmental Mon.", location: "Bldg 3, Fl 2", site: "Building 3", asset: null, operator: "A. Patel", assignee: "N. Matthews", status: "approved", version: "v1.0", fields: [], auditTrail: sampleAudit },
+  { id: "rev-15", date: "Feb 25, 2026 22:30", logbook: "Cleaning Log", location: "Bldg 3, Fl 2", site: "Building 3", asset: "Mixer M-105", operator: "J. Martinez", assignee: "N. Matthews", status: "approved", version: "v2.1", fields: [], auditTrail: sampleAudit },
+  { id: "rev-16", date: "Feb 25, 2026 18:00", logbook: "Cleaning Log", location: "Lab A", site: "Lab A", asset: "Spectro S-01", operator: "K. Chen", assignee: "R. Kim", status: "approved", version: "v2.1", fields: [], auditTrail: sampleAudit },
+  { id: "rev-17", date: "Feb 25, 2026 14:30", logbook: "Calibration Log", location: "Lab A", site: "Lab A", asset: "pH Meter PH-03", operator: "R. Kim", assignee: "R. Kim", status: "approved", version: "v3.0", fields: [], auditTrail: sampleAudit },
+  { id: "rev-18", date: "Feb 25, 2026 14:00", logbook: "Temp Check", location: "Bldg 3, Fl 2", site: "Building 3", asset: "Centrifuge C-042", operator: "A. Patel", assignee: "N. Matthews", status: "approved", version: "v1.2", fields: [], auditTrail: sampleAudit },
+  { id: "rev-19", date: "Feb 25, 2026 10:00", logbook: "Environmental Mon.", location: "Bldg 3, Fl 2", site: "Building 3", asset: null, operator: "J. Martinez", assignee: "N. Matthews", status: "approved", version: "v1.0", fields: [], auditTrail: sampleAudit },
+  { id: "rev-20", date: "Feb 25, 2026 06:00", logbook: "Cleaning Log", location: "Bldg 3, Fl 2", site: "Building 3", asset: "Reactor R-201", operator: "K. Chen", assignee: "N. Matthews", status: "rejected", version: "v2.1", fields: sampleFields, auditTrail: sampleAudit },
 ];
 
 // ── Location → asset associations for template management ──

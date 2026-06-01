@@ -3,21 +3,32 @@ import { RAMDrawer } from "./RAMDrawer";
 import { PinInput } from "./PinInput";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Nfc, QrCode, ScanLine, Check, Wifi } from "lucide-react";
+import { Nfc, QrCode, ScanLine, Check, Wifi, PenLine, ShieldCheck, ClipboardCheck } from "lucide-react";
+
+export type SignatureMeaning = "performed" | "verified" | "reviewed";
 
 interface ESignDrawerProps {
   open: boolean;
   onClose: () => void;
-  onSign: () => void;
+  onSign: (meaning: SignatureMeaning) => void;
+  /** When true, force meaning to "performed" (e.g. an exception sign-off). */
+  forcedMeaning?: SignatureMeaning;
 }
 
 type AuthMethod = "nfc" | "barcode" | null;
-type AuthPhase = "badge" | "scanning" | "verified";
+type AuthPhase = "meaning" | "badge" | "scanning" | "verified";
 
-export function ESignDrawer({ open, onClose, onSign }: ESignDrawerProps) {
+const MEANINGS: { id: SignatureMeaning; label: string; description: string; icon: typeof PenLine }[] = [
+  { id: "performed", label: "Performed", description: "I performed this work and recorded the values.", icon: PenLine },
+  { id: "verified", label: "Verified", description: "I witnessed the work or independently checked the values.", icon: ShieldCheck },
+  { id: "reviewed", label: "Reviewed", description: "I reviewed the entry for completeness and compliance.", icon: ClipboardCheck },
+];
+
+export function ESignDrawer({ open, onClose, onSign, forcedMeaning }: ESignDrawerProps) {
   const [pinComplete, setPinComplete] = useState(false);
   const [authMethod, setAuthMethod] = useState<AuthMethod>(null);
-  const [phase, setPhase] = useState<AuthPhase>("badge");
+  const [meaning, setMeaning] = useState<SignatureMeaning | null>(forcedMeaning ?? null);
+  const [phase, setPhase] = useState<AuthPhase>(forcedMeaning ? "badge" : "meaning");
 
   const handleBadgeScan = (method: AuthMethod) => {
     setAuthMethod(method);
@@ -27,18 +38,26 @@ export function ESignDrawer({ open, onClose, onSign }: ESignDrawerProps) {
     }, 2000);
   };
 
-  const handleSign = () => {
-    onSign();
+  const reset = () => {
     setPinComplete(false);
     setAuthMethod(null);
-    setPhase("badge");
+    setMeaning(forcedMeaning ?? null);
+    setPhase(forcedMeaning ? "badge" : "meaning");
+  };
+
+  const handleSign = () => {
+    if (meaning) onSign(meaning);
+    reset();
   };
 
   const handleClose = () => {
-    setPinComplete(false);
-    setAuthMethod(null);
-    setPhase("badge");
+    reset();
     onClose();
+  };
+
+  const selectMeaning = (m: SignatureMeaning) => {
+    setMeaning(m);
+    setPhase("badge");
   };
 
   return (

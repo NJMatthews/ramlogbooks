@@ -65,7 +65,9 @@ export function ESignDrawer({ open, onClose, onSign, forcedMeaning }: ESignDrawe
       open={open}
       onClose={handleClose}
       title={
-        phase === "badge"
+        phase === "meaning"
+          ? "Sign as…"
+          : phase === "badge"
           ? "Badge Verification"
           : phase === "scanning"
           ? "Scanning..."
@@ -90,11 +92,37 @@ export function ESignDrawer({ open, onClose, onSign, forcedMeaning }: ESignDrawe
         )
       }
     >
+      {/* Meaning phase: pick Performed / Verified / Reviewed */}
+      {phase === "meaning" && (
+        <div className="flex flex-col gap-ram-lg py-ram-md animate-fade-in">
+          <p className="text-text-md text-gray-600">
+            Choose the meaning of your signature. This is recorded in the audit trail and is binding under 21 CFR Part 11.
+          </p>
+          <div className="space-y-ram-md">
+            {MEANINGS.map((m) => (
+              <button
+                key={m.id}
+                onClick={() => selectMeaning(m.id)}
+                className="flex w-full items-center gap-ram-lg rounded-ram-md border border-border bg-card p-ram-lg text-left hover:border-brand-500 hover:shadow-ram-sm transition-all"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100">
+                  <m.icon className="h-5 w-5 text-brand-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-text-md font-extrabold text-foreground">{m.label}</p>
+                  <p className="text-text-xs text-gray-600">{m.description}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Badge phase: PIN + scan/tap in one view */}
       {phase === "badge" && (
         <div className="flex flex-col items-center gap-ram-xl py-ram-md animate-fade-in">
           <p className="text-text-md text-gray-600 text-center">
-            Verify your identity to sign this entry
+            Verify your identity to sign as <b className="text-foreground">{meaning ? MEANINGS.find((x) => x.id === meaning)?.label : ""}</b>
           </p>
 
           {/* PIN Section */}

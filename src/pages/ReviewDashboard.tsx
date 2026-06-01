@@ -153,7 +153,10 @@ export default function ReviewDashboard() {
                 {selectMode ? "Cancel" : "Select"}
               </button>
             )}
-            <button className="flex items-center gap-ram-sm rounded-ram-md border border-border px-ram-xl py-ram-md text-text-sm font-medium text-foreground hover:bg-muted transition-colors">
+            <button
+              onClick={() => setExportOpen(true)}
+              className="flex items-center gap-ram-sm rounded-ram-md border border-border px-ram-xl py-ram-md text-text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            >
               <Download className="h-4 w-4" />
               Export
             </button>

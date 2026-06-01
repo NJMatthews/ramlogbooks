@@ -126,6 +126,9 @@ export default function LogbookEntryForm() {
           />
         ) : (
           <div className="mx-auto max-w-[600px] space-y-ram-xl">
+            {id && ramContextByLogbookId[id] && (
+              <LinkedRamContext context={ramContextByLogbookId[id]} />
+            )}
             {/* Quick Fill Banner */}
             {!quickFillDismissed && !hasAnyValue && (
               <div className="rounded-ram-xl border border-border bg-card p-4 animate-fade-in">

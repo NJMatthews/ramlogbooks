@@ -17,7 +17,8 @@ export function AppLayout({ children, hideNav }: AppLayoutProps) {
     <div className="flex h-screen w-full bg-background overflow-hidden">
       {!isMobile && !hideNav && <SidebarNav />}
       <div className="flex flex-1 flex-col h-screen overflow-hidden">
-        {state.isOffline && <StatusBar />}
+        <StatusBar />
+        {void state.isOffline}
         <main className="flex-1 overflow-y-auto flex flex-col">{children}</main>
         {isMobile && !hideNav && <div className="shrink-0"><BottomNav /></div>}
       </div>

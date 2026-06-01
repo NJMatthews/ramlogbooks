@@ -297,6 +297,19 @@ export default function ReviewDashboard() {
       {/* Entry detail drawer */}
       <EntryDetailDrawer entry={detailEntry} onClose={() => setDetailEntry(null)} onApprove={handleApprove} onReject={handleReject} />
 
+      <ExportBundleModal
+        open={exportOpen}
+        entries={filteredEntries}
+        scopeLabel={[
+          showExceptions && "Exceptions",
+          showOverdue && "Overdue",
+          logbookFilter !== "all" && logbookFilter,
+          siteFilter !== "all" && siteFilter,
+          assigneeFilter !== "all" && assigneeFilter,
+        ].filter(Boolean).join(" · ") || "Current view"}
+        onClose={() => setExportOpen(false)}
+      />
+
       {/* Confirm modal */}
       {confirmAction && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-foreground/60">

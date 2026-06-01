@@ -513,6 +513,20 @@ function MobileGroupedView({
               <p className="mt-ram-sm text-[15px] font-extrabold text-foreground">{entry.logbook}</p>
               <p className="text-text-sm text-gray-600">{entry.location}{entry.asset ? ` · ${entry.asset}` : ""}</p>
               <p className="text-text-sm text-gray-500">{entry.operator}</p>
+              {(entry.hasException || entry.slaBreached) && (
+                <div className="mt-ram-sm flex flex-wrap gap-ram-xs">
+                  {entry.hasException && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-error-600/10 px-2 py-0.5 text-[10px] font-extrabold text-error-600">
+                      <AlertTriangle className="h-3 w-3" /> Exception
+                    </span>
+                  )}
+                  {entry.slaBreached && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-warning-400/10 px-2 py-0.5 text-[10px] font-extrabold text-warning-400">
+                      <Clock className="h-3 w-3" /> SLA · {entry.hoursOpen}h
+                    </span>
+                  )}
+                </div>
+              )}
               <div className="mt-ram-lg flex gap-ram-md">
                 <button onClick={() => onApprove(entry.id)} className="p-ram-md text-success-400 hover:bg-success-100 rounded-ram-xs"><CheckCircle className="h-5 w-5" /></button>
                 <button onClick={() => onReject(entry.id)} className="p-ram-md text-error-600 hover:bg-error-100 rounded-ram-xs"><XCircle className="h-5 w-5" /></button>

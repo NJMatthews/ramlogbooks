@@ -640,7 +640,21 @@ function GroupRows({ group, collapsed, onToggle, selected, onToggleSelect, onApp
           <td className="px-ram-lg text-text-sm text-foreground">{entry.location}</td>
           <td className="px-ram-lg text-text-sm text-foreground">{entry.asset ?? "—"}</td>
           <td className="px-ram-lg text-text-sm text-foreground">{entry.operator}</td>
-          <td className="px-ram-lg"><StatusChip status={entry.status} /></td>
+          <td className="px-ram-lg">
+            <div className="flex items-center gap-ram-xs">
+              <StatusChip status={entry.status} />
+              {entry.hasException && (
+                <span title="Out-of-limit exception" className="inline-flex items-center rounded-full bg-error-600/10 p-0.5 text-error-600">
+                  <AlertTriangle className="h-3 w-3" />
+                </span>
+              )}
+              {entry.slaBreached && (
+                <span title={`SLA breached · ${entry.hoursOpen}h open`} className="inline-flex items-center rounded-full bg-warning-400/10 p-0.5 text-warning-400">
+                  <Clock className="h-3 w-3" />
+                </span>
+              )}
+            </div>
+          </td>
           <td className="px-ram-lg" onClick={(e) => e.stopPropagation()}>
             <div className="flex gap-ram-xxs">
               <button onClick={() => onApprove(entry.id)} className="p-1 text-success-400 hover:text-success-900"><CheckCircle className="h-4 w-4" /></button>

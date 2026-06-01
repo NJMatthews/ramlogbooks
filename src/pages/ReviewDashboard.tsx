@@ -30,17 +30,40 @@ export default function ReviewDashboard() {
   const [confirmAction, setConfirmAction] = useState<{ action: "approve" | "reject"; ids: string[] } | null>(null);
   const [entries, setEntries] = useState(mockReviewEntries);
   const [viewMode, setViewMode] = useState<ViewMode>("grouped");
+  // Phase B filter chips
+  const [showExceptions, setShowExceptions] = useState(false);
+  const [showOverdue, setShowOverdue] = useState(false);
+  const [showMine, setShowMine] = useState(false);
+  const [logbookFilter, setLogbookFilter] = useState<string>("all");
+  const [siteFilter, setSiteFilter] = useState<string>("all");
+  const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
+  const [exportOpen, setExportOpen] = useState(false);
+
+  const logbookOptions = useMemo(() => Array.from(new Set(entries.map((e) => e.logbook))).sort(), [entries]);
+  const siteOptions = useMemo(() => Array.from(new Set(entries.map((e) => e.site ?? e.location))).sort(), [entries]);
+  const assigneeOptions = useMemo(() => Array.from(new Set(entries.map((e) => e.assignee).filter(Boolean) as string[])).sort(), [entries]);
 
   const filteredEntries = useMemo(() => {
-    return entries.filter((e) => {
+    const out = entries.filter((e) => {
       if (statusFilter !== "all" && e.status !== statusFilter) return false;
+      if (showExceptions && !e.hasException) return false;
+      if (showOverdue && !e.slaBreached) return false;
+      if (showMine && e.assignee !== CURRENT_USER) return false;
+      if (logbookFilter !== "all" && e.logbook !== logbookFilter) return false;
+      if (siteFilter !== "all" && (e.site ?? e.location) !== siteFilter) return false;
+      if (assigneeFilter !== "all" && e.assignee !== assigneeFilter) return false;
       if (search) {
         const s = search.toLowerCase();
         if (!e.operator.toLowerCase().includes(s) && !e.logbook.toLowerCase().includes(s) && !(e.asset ?? "").toLowerCase().includes(s)) return false;
       }
       return true;
     });
-  }, [entries, statusFilter, search]);
+    // When Exceptions chip is active, sort oldest-exception-first by hoursOpen desc
+    if (showExceptions || showOverdue) {
+      out.sort((a, b) => (b.hoursOpen ?? 0) - (a.hoursOpen ?? 0));
+    }
+    return out;
+  }, [entries, statusFilter, search, showExceptions, showOverdue, showMine, logbookFilter, siteFilter, assigneeFilter]);
 
   const groups = useMemo(() => {
     const groupMap = new Map<string, ReviewEntry[]>();

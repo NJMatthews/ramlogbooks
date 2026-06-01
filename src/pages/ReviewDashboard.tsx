@@ -205,6 +205,28 @@ export default function ReviewDashboard() {
             </div>
           </div>
 
+          {/* Filter chip row — Phase B */}
+          <div className="flex flex-wrap items-center gap-ram-sm">
+            <FilterChip label="Exceptions" active={showExceptions} count={stats.exceptions} onClick={() => setShowExceptions((v) => !v)} onClear={() => setShowExceptions(false)} />
+            <FilterChip label="Overdue (SLA)" active={showOverdue} count={stats.overdue} onClick={() => setShowOverdue((v) => !v)} onClear={() => setShowOverdue(false)} />
+            <FilterChip label="My logbooks" active={showMine} count={stats.mine} onClick={() => setShowMine((v) => !v)} onClear={() => setShowMine(false)} />
+            <select value={logbookFilter} onChange={(e) => setLogbookFilter(e.target.value)} className="h-8 rounded-full border border-gray-300 bg-card px-ram-md text-text-sm text-foreground">
+              <option value="all">All logbook types</option>
+              {logbookOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+            <select value={siteFilter} onChange={(e) => setSiteFilter(e.target.value)} className="h-8 rounded-full border border-gray-300 bg-card px-ram-md text-text-sm text-foreground">
+              <option value="all">All sites</option>
+              {siteOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+            <select value={assigneeFilter} onChange={(e) => setAssigneeFilter(e.target.value)} className="h-8 rounded-full border border-gray-300 bg-card px-ram-md text-text-sm text-foreground">
+              <option value="all">All assignees</option>
+              {assigneeOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+            {(showExceptions || showOverdue) && (
+              <span className="text-text-xs text-gray-500 ml-auto">Sorted oldest-exception first</span>
+            )}
+          </div>
+
           {/* Clickable stat cards as filters */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-ram-lg">
             <StatCard label="Pending Review" value={stats.pending} color="text-warning-400" active={statusFilter === "pending-review"} onClick={() => handleStatClick("pending-review")} />

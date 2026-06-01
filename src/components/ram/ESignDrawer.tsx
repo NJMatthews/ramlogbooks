@@ -327,10 +327,16 @@ export function ESignDrawer({ open, onClose, onSign, forcedMeaning }: ESignDrawe
             <Check className="h-10 w-10 text-success-400" />
           </div>
           <h3 className="text-text-lg font-extrabold text-foreground">Identity Verified</h3>
-          <div className="rounded-ram-md border border-gray-200 bg-gray-50 p-ram-xl w-full max-w-[280px]">
+          <div className="rounded-ram-md border border-gray-200 bg-gray-50 p-ram-xl w-full max-w-[280px] space-y-1">
             <p className="text-text-sm text-gray-500">Operator</p>
             <p className="text-text-md font-extrabold text-foreground">John Smith</p>
-            <p className="text-text-xs text-gray-400 mt-ram-xxs">Badge #4521 • {authMethod === "nfc" ? "NFC" : "Barcode"} verified</p>
+            <p className="text-text-xs text-gray-400">Badge #4521 • {authMethod === "nfc" ? "NFC" : "Barcode"} verified</p>
+            {meaning && (
+              <div className="mt-2 pt-2 border-t border-gray-200">
+                <p className="text-text-xs text-gray-500">Signature meaning</p>
+                <p className="text-text-sm font-extrabold text-brand-500">{MEANINGS.find((m) => m.id === meaning)?.label}</p>
+              </div>
+            )}
           </div>
           <p className="text-text-xs text-gray-400 text-center">
             Signed at {new Date().toLocaleTimeString()}

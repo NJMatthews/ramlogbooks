@@ -409,9 +409,30 @@ function DetailGridView({
               <span className="text-text-xs text-gray-500">{entry.date}</span>
             </div>
 
+            {/* Flag row */}
+            {(entry.hasException || entry.slaBreached || entry.linkedWorkRequest) && (
+              <div className="mb-ram-sm flex flex-wrap items-center gap-ram-xs">
+                {entry.hasException && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-error-600/10 px-2 py-0.5 text-[10px] font-extrabold text-error-600">
+                    <AlertTriangle className="h-3 w-3" /> Exception
+                  </span>
+                )}
+                {entry.slaBreached && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-warning-400/10 px-2 py-0.5 text-[10px] font-extrabold text-warning-400">
+                    <Clock className="h-3 w-3" /> SLA · {entry.hoursOpen}h
+                  </span>
+                )}
+                {entry.linkedWorkRequest && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-extrabold text-brand-700">
+                    <Wrench className="h-3 w-3" /> {entry.linkedWorkRequest}
+                  </span>
+                )}
+              </div>
+            )}
+
             <p className="text-[15px] font-extrabold text-foreground">{entry.logbook}</p>
             <p className="text-text-sm text-gray-600">{entry.location}{entry.asset ? ` · ${entry.asset}` : ""}</p>
-            <p className="text-text-xs text-gray-500 mt-ram-xxs">{entry.operator}</p>
+            <p className="text-text-xs text-gray-500 mt-ram-xxs">{entry.operator}{entry.assignee ? ` → ${entry.assignee}` : ""}</p>
 
             {/* Entry fields preview */}
             {entry.fields && entry.fields.length > 0 && (

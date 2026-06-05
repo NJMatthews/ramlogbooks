@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AppLayout } from "@/components/ram/AppLayout";
 import { HeaderNav } from "@/components/ram/HeaderNav";
@@ -10,10 +10,20 @@ import { ESignDrawer, type SignatureMeaning } from "@/components/ram/ESignDrawer
 import { ExceptionDrawer } from "@/components/ram/ExceptionDrawer";
 import { SuccessDrawer } from "@/components/ram/SuccessDrawer";
 import { FieldVerdict } from "@/components/ram/FieldVerdict";
+import { FamilyChip } from "@/components/ram/FamilyChip";
 import { LinkedRamContext, ramContextByLogbookId } from "@/components/ram/LinkedRamContext";
+import {
+  DropdownField,
+  StatusField,
+  LinkedWOField,
+  AttachmentField,
+  PartsUsedField,
+  TripletField,
+} from "@/components/ram/EntryFieldRenderer";
 import { Button } from "@/components/ui/button";
 import { useLogbook } from "@/hooks/useLogbookState";
 import { mockLogbooks } from "@/data/mockLogbooks";
+import { mockInstances } from "@/data/mockAssets";
 import { useDeviceLocation } from "@/hooks/useDeviceLocation";
 import { evaluateField, failedFields } from "@/lib/evaluation";
 import { Calendar, Zap, Clock, ArrowRight, AlertTriangle } from "lucide-react";
@@ -52,18 +62,30 @@ export default function LogbookEntryForm() {
   const navigate = useNavigate();
   const { state, dispatch } = useLogbook();
   const { logbooks } = useDeviceLocation();
-  const logbook = logbooks.find((l) => l.id === id) ?? mockLogbooks.find((l) => l.id === id);
-  const isPaper = logbook?.format === "paper";
+  const instance = mockInstances.find((i) => i.instanceId === id);
+  const logbook =
+    logbooks.find((l) => l.id === id) ??
+    mockLogbooks.find((l) => l.id === id) ??
+    (instance
+      ? { id: instance.instanceId, name: instance.name, location: instance.assetName ?? "", lastEntry: instance.lastEntry, status: "active" as const, entryCount: 0, fieldCount: instance.fieldCount, family: instance.family }
+      : undefined);
+  const isPaper = (logbook as { format?: string } | undefined)?.format === "paper";
   const [quickFillDismissed, setQuickFillDismissed] = useState(false);
   const [exceptionOpen, setExceptionOpen] = useState(false);
   const [exceptionAck, setExceptionAck] = useState<{ impact: string; attached: boolean } | null>(null);
   const [lastMeaning, setLastMeaning] = useState<SignatureMeaning>("performed");
   const [draftedWR, setDraftedWR] = useState<string | null>(null);
 
+  // Load the right field set when navigating into this logbook/instance
+  useEffect(() => {
+    if (id) dispatch({ type: "SELECT_LOGBOOK", id });
+  }, [id, dispatch]);
+
   const hasAnyValue = state.formFields.some((f) => f.value.trim() !== "" && f.type !== "toggle");
 
   const failures = useMemo(() => failedFields(state.formFields), [state.formFields]);
   const hasFailures = failures.length > 0;
+
 
   const handleQuickFill = () => {
     Object.entries(lastEntryValues).forEach(([fieldId, value]) => {

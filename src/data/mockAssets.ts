@@ -109,13 +109,23 @@ export interface ReviewEntry {
 // ── Mock Data ───────────────────────────────────────────────
 
 export const mockAssets: Asset[] = [
-  { id: "asset-001", name: "Reactor R-201", assetId: "RAM-3201", type: "Reactor", locationId: "loc-001", logbookCount: 3, status: "current" },
-  { id: "asset-002", name: "Mixer M-105", assetId: "RAM-3105", type: "Mixer", locationId: "loc-001", logbookCount: 2, status: "current" },
-  { id: "asset-003", name: "Centrifuge C-042", assetId: "RAM-3042", type: "Centrifuge", locationId: "loc-001", logbookCount: 2, status: "overdue" },
-  { id: "asset-004", name: "Autoclave A-017", assetId: "RAM-3017", type: "Autoclave", locationId: "loc-001", logbookCount: 1, status: "current" },
-  { id: "asset-005", name: "Fume Hood FH-12", assetId: "RAM-3012", type: "Fume Hood", locationId: "loc-001", logbookCount: 1, status: "current" },
-  { id: "asset-006", name: "pH Meter PH-03", assetId: "RAM-2003", type: "pH Meter", locationId: "loc-002", logbookCount: 1, status: "current" },
-  { id: "asset-007", name: "Spectrophotometer S-01", assetId: "RAM-2001", type: "Spectrophotometer", locationId: "loc-002", logbookCount: 1, status: "current" },
+  { id: "asset-001", name: "Reactor R-201", assetId: "RAM-3201", type: "Reactor", locationId: "loc-001", logbookCount: 3, status: "current", serviceStatus: "in-service" },
+  { id: "asset-002", name: "Mixer M-105", assetId: "RAM-3105", type: "Mixer", locationId: "loc-001", logbookCount: 2, status: "current", serviceStatus: "in-service" },
+  { id: "asset-003", name: "Centrifuge C-042", assetId: "RAM-3042", type: "Centrifuge", locationId: "loc-001", logbookCount: 2, status: "overdue", serviceStatus: "in-service" },
+  { id: "asset-004", name: "Autoclave A-017", assetId: "RAM-3017", type: "Autoclave", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-005", name: "Fume Hood FH-12", assetId: "RAM-3012", type: "Fume Hood", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-006", name: "pH Meter PH-03", assetId: "RAM-2003", type: "pH Meter", locationId: "loc-002", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-007", name: "Spectrophotometer S-01", assetId: "RAM-2001", type: "Spectrophotometer", locationId: "loc-002", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+
+  // ── v1 scope demo assets (8-example logbooks) ─────────────
+  { id: "asset-a101", name: "Autoclave A-101", assetId: "RAM-3101", type: "Autoclave", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-tw044", name: "Torque Wrench TW-044", assetId: "RAM-T044", type: "Tool", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-p2", name: "Packaging Line P-2", assetId: "RAM-P002", type: "Packaging Line", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-cip03", name: "CIP Skid CIP-03", assetId: "RAM-C003", type: "CIP Skid", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-f220", name: "Filler F-220", assetId: "RAM-F220", type: "Filler", locationId: "loc-001", logbookCount: 1, status: "overdue", serviceStatus: "under-maintenance" },
+  { id: "asset-ahu7", name: "HVAC AHU-7", assetId: "RAM-AHU7", type: "HVAC", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-s015", name: "Scale S-015", assetId: "RAM-S015", type: "Scale", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-pt88", name: "Pressure Transmitter PT-88", assetId: "RAM-PT88", type: "Transmitter", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
 ];
 
 const cleaningLogFields: TemplateField[] = [

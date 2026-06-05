@@ -1,5 +1,9 @@
 // ── Interfaces ──────────────────────────────────────────────
 
+import type { LogbookFamily } from "./mockLogbooks";
+
+export type AssetServiceStatus = "in-service" | "out-of-service" | "under-maintenance";
+
 export interface Asset {
   id: string;
   name: string;
@@ -8,6 +12,7 @@ export interface Asset {
   locationId: string;
   logbookCount: number;
   status: "current" | "overdue";
+  serviceStatus?: AssetServiceStatus;
 }
 
 export interface TemplateField {
@@ -54,6 +59,7 @@ export interface LogbookInstance {
   schedule: string;
   isOverdue: boolean;
   fieldCount: number;
+  family?: LogbookFamily;
 }
 
 export type ReviewStatus = "pending-review" | "approved" | "rejected" | "correction-requested";

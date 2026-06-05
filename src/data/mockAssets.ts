@@ -1,5 +1,9 @@
 // ── Interfaces ──────────────────────────────────────────────
 
+import type { LogbookFamily } from "./mockLogbooks";
+
+export type AssetServiceStatus = "in-service" | "out-of-service" | "under-maintenance";
+
 export interface Asset {
   id: string;
   name: string;
@@ -8,6 +12,7 @@ export interface Asset {
   locationId: string;
   logbookCount: number;
   status: "current" | "overdue";
+  serviceStatus?: AssetServiceStatus;
 }
 
 export interface TemplateField {
@@ -54,6 +59,7 @@ export interface LogbookInstance {
   schedule: string;
   isOverdue: boolean;
   fieldCount: number;
+  family?: LogbookFamily;
 }
 
 export type ReviewStatus = "pending-review" | "approved" | "rejected" | "correction-requested";
@@ -103,13 +109,23 @@ export interface ReviewEntry {
 // ── Mock Data ───────────────────────────────────────────────
 
 export const mockAssets: Asset[] = [
-  { id: "asset-001", name: "Reactor R-201", assetId: "RAM-3201", type: "Reactor", locationId: "loc-001", logbookCount: 3, status: "current" },
-  { id: "asset-002", name: "Mixer M-105", assetId: "RAM-3105", type: "Mixer", locationId: "loc-001", logbookCount: 2, status: "current" },
-  { id: "asset-003", name: "Centrifuge C-042", assetId: "RAM-3042", type: "Centrifuge", locationId: "loc-001", logbookCount: 2, status: "overdue" },
-  { id: "asset-004", name: "Autoclave A-017", assetId: "RAM-3017", type: "Autoclave", locationId: "loc-001", logbookCount: 1, status: "current" },
-  { id: "asset-005", name: "Fume Hood FH-12", assetId: "RAM-3012", type: "Fume Hood", locationId: "loc-001", logbookCount: 1, status: "current" },
-  { id: "asset-006", name: "pH Meter PH-03", assetId: "RAM-2003", type: "pH Meter", locationId: "loc-002", logbookCount: 1, status: "current" },
-  { id: "asset-007", name: "Spectrophotometer S-01", assetId: "RAM-2001", type: "Spectrophotometer", locationId: "loc-002", logbookCount: 1, status: "current" },
+  { id: "asset-001", name: "Reactor R-201", assetId: "RAM-3201", type: "Reactor", locationId: "loc-001", logbookCount: 3, status: "current", serviceStatus: "in-service" },
+  { id: "asset-002", name: "Mixer M-105", assetId: "RAM-3105", type: "Mixer", locationId: "loc-001", logbookCount: 2, status: "current", serviceStatus: "in-service" },
+  { id: "asset-003", name: "Centrifuge C-042", assetId: "RAM-3042", type: "Centrifuge", locationId: "loc-001", logbookCount: 2, status: "overdue", serviceStatus: "in-service" },
+  { id: "asset-004", name: "Autoclave A-017", assetId: "RAM-3017", type: "Autoclave", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-005", name: "Fume Hood FH-12", assetId: "RAM-3012", type: "Fume Hood", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-006", name: "pH Meter PH-03", assetId: "RAM-2003", type: "pH Meter", locationId: "loc-002", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-007", name: "Spectrophotometer S-01", assetId: "RAM-2001", type: "Spectrophotometer", locationId: "loc-002", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+
+  // ── v1 scope demo assets (8-example logbooks) ─────────────
+  { id: "asset-a101", name: "Autoclave A-101", assetId: "RAM-3101", type: "Autoclave", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-tw044", name: "Torque Wrench TW-044", assetId: "RAM-T044", type: "Tool", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-p2", name: "Packaging Line P-2", assetId: "RAM-P002", type: "Packaging Line", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-cip03", name: "CIP Skid CIP-03", assetId: "RAM-C003", type: "CIP Skid", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-f220", name: "Filler F-220", assetId: "RAM-F220", type: "Filler", locationId: "loc-001", logbookCount: 1, status: "overdue", serviceStatus: "under-maintenance" },
+  { id: "asset-ahu7", name: "HVAC AHU-7", assetId: "RAM-AHU7", type: "HVAC", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-s015", name: "Scale S-015", assetId: "RAM-S015", type: "Scale", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
+  { id: "asset-pt88", name: "Pressure Transmitter PT-88", assetId: "RAM-PT88", type: "Transmitter", locationId: "loc-001", logbookCount: 1, status: "current", serviceStatus: "in-service" },
 ];
 
 const cleaningLogFields: TemplateField[] = [
@@ -179,6 +195,16 @@ export const mockInstances: LogbookInstance[] = [
   { instanceId: "inst-010", templateId: "tpl-005", locationId: "loc-001", assetId: null, name: "Visitor Access Log", assetName: null, lastEntry: "3 hours ago", lastOperator: "J. Martinez", schedule: "As needed", isOverdue: false, fieldCount: 4 },
   { instanceId: "inst-011", templateId: "tpl-003", locationId: "loc-002", assetId: "asset-006", name: "Calibration Log", assetName: "pH Meter PH-03", lastEntry: "Yesterday", lastOperator: "K. Chen", schedule: "Weekly", isOverdue: false, fieldCount: 12 },
   { instanceId: "inst-012", templateId: "tpl-001", locationId: "loc-002", assetId: "asset-007", name: "Cleaning Log", assetName: "Spectrophotometer S-01", lastEntry: "2 days ago", lastOperator: "R. Kim", schedule: "Weekly", isOverdue: false, fieldCount: 6 },
+
+  // ── v1 scope demo instances (8 examples from Core Problems doc) ──
+  { instanceId: "inst-eq-01", templateId: "tpl-eq-01", locationId: "loc-001", assetId: "asset-a101", name: "Autoclave Daily Use & Cycle Readiness", assetName: "Autoclave A-101", lastEntry: "Today, 06:12 AM", lastOperator: "J. Martinez", schedule: "Start of shift", isOverdue: false, fieldCount: 9, family: "equipment-status" },
+  { instanceId: "inst-eq-02", templateId: "tpl-eq-02", locationId: "loc-001", assetId: "asset-tw044", name: "Tool Checkout & Return", assetName: "Torque Wrench TW-044", lastEntry: "Yesterday, 4:18 PM", lastOperator: "K. Chen", schedule: "On checkout", isOverdue: false, fieldCount: 9, family: "equipment-status" },
+  { instanceId: "inst-cl-01", templateId: "tpl-cl-01", locationId: "loc-001", assetId: "asset-p2", name: "Packaging Line Clearance", assetName: "Packaging Line P-2", lastEntry: "Today, 09:40 AM", lastOperator: "A. Patel (Lead)", schedule: "Lot changeover", isOverdue: false, fieldCount: 11, family: "cleaning" },
+  { instanceId: "inst-cl-02", templateId: "tpl-cl-02", locationId: "loc-001", assetId: "asset-cip03", name: "CIP Post-Clean Verification", assetName: "CIP Skid CIP-03", lastEntry: "Today, 08:05 AM", lastOperator: "R. Kim", schedule: "Per cycle", isOverdue: false, fieldCount: 9, family: "cleaning" },
+  { instanceId: "inst-mt-01", templateId: "tpl-mt-01", locationId: "loc-001", assetId: "asset-f220", name: "Unplanned Downtime Troubleshoot", assetName: "Filler F-220", lastEntry: "30 min ago", lastOperator: "J. Martinez", schedule: "On breakdown", isOverdue: true, fieldCount: 10, family: "maintenance" },
+  { instanceId: "inst-mt-02", templateId: "tpl-mt-02", locationId: "loc-001", assetId: "asset-ahu7", name: "Temporary Mitigation", assetName: "HVAC AHU-7", lastEntry: "Yesterday", lastOperator: "K. Chen (Supervisor)", schedule: "Daily verify while open", isOverdue: false, fieldCount: 10, family: "maintenance" },
+  { instanceId: "inst-cb-01", templateId: "tpl-cb-01", locationId: "loc-001", assetId: "asset-s015", name: "Critical Scale Daily Verify", assetName: "Scale S-015", lastEntry: "Today, 05:55 AM", lastOperator: "A. Patel", schedule: "Daily, pre-weigh", isOverdue: false, fieldCount: 8, family: "calibration" },
+  { instanceId: "inst-cb-02", templateId: "tpl-cb-02", locationId: "loc-001", assetId: "asset-pt88", name: "Post-Maintenance Instrument Check", assetName: "Pressure Transmitter PT-88", lastEntry: "2 days ago", lastOperator: "R. Kim (Cal Tech)", schedule: "On WO completion", isOverdue: false, fieldCount: 7, family: "calibration" },
 ];
 
 const sampleFields: ReviewEntryField[] = [

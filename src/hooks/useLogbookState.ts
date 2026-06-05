@@ -1,10 +1,7 @@
 import { useReducer, createContext, useContext } from "react";
-import { cleanRoomFormFields, phConductivityFormFields, type FormField, type SyncEntry, mockSyncQueue } from "@/data/mockLogbooks";
+import { cleanRoomFormFields, fieldsByLogbookId, type FormField, type SyncEntry, mockSyncQueue } from "@/data/mockLogbooks";
 
-const formFieldsByLogbook: Record<string, FormField[]> = {
-  "1": cleanRoomFormFields,
-  "4": phConductivityFormFields,
-};
+const formFieldsByLogbook: Record<string, FormField[]> = fieldsByLogbookId;
 
 interface LogbookState {
   selectedLogbookId: string | null;

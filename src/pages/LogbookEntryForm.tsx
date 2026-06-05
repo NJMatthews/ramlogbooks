@@ -188,13 +188,15 @@ export default function LogbookEntryForm() {
 
             {state.formFields.map((field) => {
               const ev = evaluateField(field);
+              const onChange = (v: string) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v });
+
               if (field.type === "textarea") {
                 return (
                   <RAMTextarea
                     key={field.id}
                     label={field.label}
                     value={field.value}
-                    onChange={(v) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v })}
+                    onChange={onChange}
                     placeholder="Enter observations..."
                     expanded
                   />
@@ -206,12 +208,31 @@ export default function LogbookEntryForm() {
                     <RAMToggle
                       label={field.label}
                       value={field.value === "pass"}
-                      onChange={(v) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v ? "pass" : "fail" })}
+                      onChange={(v) => onChange(v ? "pass" : "fail")}
                     />
                     <FieldVerdict field={field} evaluation={ev} />
                   </div>
                 );
               }
+              if (field.type === "dropdown") {
+                return <DropdownField key={field.id} field={field} onChange={onChange} />;
+              }
+              if (field.type === "status") {
+                return <StatusField key={field.id} field={field} onChange={onChange} />;
+              }
+              if (field.type === "linked-wo") {
+                return <LinkedWOField key={field.id} field={field} onChange={onChange} />;
+              }
+              if (field.type === "attachment") {
+                return <AttachmentField key={field.id} field={field} onChange={onChange} />;
+              }
+              if (field.type === "parts-used") {
+                return <PartsUsedField key={field.id} field={field} onChange={onChange} />;
+              }
+              if (field.type === "triplet") {
+                return <TripletField key={field.id} field={field} onChange={onChange} />;
+              }
+
               return (
                 <div key={field.id} className="space-y-ram-sm">
                   <RAMInput

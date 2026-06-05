@@ -1,79 +1,94 @@
 
-# Logbook v1 Spec — Gap Analysis & Plan
+# VoC-Driven Prototype Changes (revised)
 
-Mapping the spec (Draft v0.3) against the current prototype (Execute / Manage / Review workflows).
+You're right — tablet form factor, location pinning, and PIN/badge auth on submit already exist. The kiosk pattern is mostly there; we just need to **close the loop on login** and focus the rest of the work on the higher-leverage VoC items.
 
-## 1. What we have right
+## Tier 1 — Adoption-critical
 
-- **Three-surface model** Execute / Manage / Review maps cleanly to the spec's mobile execution + web authoring + QA review split.
-- **Execute as primary capture surface** — asset-led, scan-to-start, single-tap entry, View History on the card. Matches "mobile-first, point-of-capture" intent.
-- **Asset binding** — every instance is bound to an asset (or location), matching P0.4 "Native RAM linkage" at the UI level.
-- **Review-by-exception scaffolding** — ReviewDashboard with slice-by-logbook (grouped per asset), pending/approved/rejected statuses, batch grid view. Aligns with P0.5.
-- **Template versioning** — TemplateDetail shows immutable v1.0/v2.0/v2.1 with "Active/Superseded", entry counts, change summary, revert/fork. Aligns with story §Template Author #4.
-- **Template authoring entry points** — "Scan Paper" vs "Create from Scratch" (Manage) matches P2.1 paper-to-digital posture (scan today, AI-assist later).
-- **E-sign drawer** with QR/NFC animations — covers the "Performed / Verified / Reviewed" capture moment.
-- **Offline queue page** exists as a surface (OfflineQueue route).
+### 1. Simulated PIN / badge login (NEW, lightweight)
+Reuse the existing PIN + badge-tap animations from `ESignDrawer` for session start, not just signing.
+- New `/login` (or kiosk-mode lock screen) showing "Tap badge or enter PIN" — same visuals as the e-sign drawer.
+- On success, set a mock `currentUser` in context (e.g., "J. Martinez, Operator"). No backend; pure prototype.
+- Idle timeout on the location-pinned tablet: after N minutes of inactivity, snap back to the lock screen. Reinforces the "no full RAM login" story Pablo described.
+- Show the active user as a small chip in `StatusBar` with a "Switch user" affordance (tap badge → swap).
 
-## 2. What needs iteration
+### 2. Compress Execute to "scan → action menu → sign" (Cindy, Pablo)
+Today: Execute → Asset → Logbook → Form (4 taps). Target: 2 taps for repeat entries.
+- After scan/asset select, show a **What do you want to do?** sheet: *Log a reading*, *Report an issue*, *View history*, *Start PM*. Mirrors Cindy's quote verbatim.
+- Auto-apply Quick Fill silently for repeat-cadence logbooks (keep banner only for first-of-shift) so the form opens pre-filled and one tap from signing.
 
-- **E-sign meaning is not explicit.** Drawer captures a signature but doesn't make the operator pick **Performed / Verified / Reviewed** (P0 story #5). Needs a meaning selector + display on the entry.
-- **Review queue filters are thin.** Spec P0.5 calls for filters by *exception, overdue review, logbook type, site, assignee*, sorted oldest-exception-first, with **SLA breach flags**. Current slices group but don't filter by exception/SLA/assignee.
-- **Audit trail surface is minimal.** Mock `auditTrail` has 3 generic entries. Spec P0.2 requires ALCOA++ fields: actor, timestamp, prior→new value, reason code, chain-of-trust hash, template version hash, plus **captured vs synced timestamps**. EntryDetailDrawer should expose these.
-- **Trace visibility.** Spec requires the Evaluation Service trace inline next to each verdict (story #7, P0.7/P0.8). We have no concept of a per-field verdict/trace yet.
-- **Offline indicator.** OfflineQueue exists but Execute has no persistent "offline / X queued / last sync" status bar to make offline-first tangible.
-- **Template version binding on entries.** Review entries carry a `version` string but the entry detail doesn't show "bound template version hash" or warn on version drift.
-- **Manage > scope binding.** Templates list locations/assets counts but there's no UI for binding **who can initiate / perform / verify / review** per scope (story Sys Admin #3).
+### 3. Soft review gate, not a hard block (Vicki — the abandonment story)
+Biggest risk in the spec. Rework P0.5 wiring:
+- Add `reviewPolicy` to template: `none | notify | block`, plus `reviewCadence` (every N entries, on exception, by logbook type).
+- In `LogbookEntryForm`, when cadence is hit and policy = `notify`: show a non-blocking banner ("Review due — reviewer notified") and allow the next entry to proceed.
+- Add a fourth e-sign meaning: **Documented** (self-certifying, no review required) alongside Performed/Verified/Reviewed in `ESignDrawer`.
+- Surface a "Review backlog" badge on `ReviewDashboard` instead of blocking capture.
 
-## 3. Missing / changes our implementation
+### 4. Promote attachments to P0 (Brian — "pictures tell 1000 words")
+- New `photo` field type in `mockLogbooks.ts` and `CreateTemplate` field library.
+- Camera/upload affordance in `LogbookEntryForm`, thumbnail strip on the entry.
+- In `EntryDetailDrawer`, render a **photo timeline comparison** strip (Vicki's gauge-over-days concern) — same field across recent entries.
+- Auto-attach selected photos when an exception drafts a Work Request.
 
-- **Exception handling flow (P0.3).** When an out-of-limit value is entered the operator must be forced through:
-  1. impact assessment text,
-  2. optional attachment,
-  3. escalation-path preview,
-  before e-sign is allowed. Currently the entry form doesn't evaluate limits or block sign.
-- **Auto-drafted RAM work request (P0.3 / story Maint #6).** No "draft work request" affordance from a failed entry.
-- **Audit-ready export bundle (P0.6).** No Export action anywhere in Review (manifest + entries + audit + signatures + traces + linked WOs + SHA-256 hash + <90s for single-asset/quarter scope).
-- **Criteria tree + formula editor with test bench (P0.9, story Author #2).** CreateTemplate has fields but no visual criteria tree (AND/OR), no equation editor, no test bench.
-- **Field library parity with Evaluation Service.** Current field types (Text/Number/Date/Time/Textarea/Toggle/Dropdown) need: **numeric with limits, pass/fail, controlled list, photo, controlled text, e-sign meaning**.
-- **Linked RAM context inside entries (P0.4).** No "latest calibration / open WO" panel on an entry against an instrument.
-- **SLA / overdue-review concept** on review entries.
-- **Captured-vs-synced timestamp** on entries.
-- **Photo / attachment capture (P1.1)** and **voice-to-text (P1.2)** — not present.
-- **Supervisor real-time rounds view (P1.3 web at GA)** — no supervisor dashboard.
+## Tier 2 — Configurability & linkage
 
-## 4. Proposed plan (phased)
+### 5. Per-asset / per-type template binding UX (Vicki, Cindy — "work plan template" model)
+- In `TemplateDetail`, present "Associations" as a Work-Plan-style **Scope bindings** matrix: asset type × site × role with chip selectors.
+- Show "Copies from" lineage when forking.
+- Field library additions in `CreateTemplate`: numeric+limits, pass/fail, controlled list, photo, calculated field, e-sign meaning.
 
-### Phase A — Make execution feel ALCOA++ (highest spec leverage)
-1. **E-sign meaning** — add Performed / Verified / Reviewed selector in `ESignDrawer`; display chosen meaning on entry detail + audit trail.
-2. **Per-field limits + verdict + trace** — extend `TemplateField` with `limits`/`criteria`; render inline Pass/Fail chip and a "Why?" popover showing the trace (comparison, value, outcome) in `LogbookEntryForm` and `EntryDetailDrawer`.
-3. **Exception flow** — when a verdict fails, block submit; require impact text + optional photo, show escalation preview, then allow sign.
-4. **Auto-draft work request** — on failed sign, generate a mock WR card linked back to the entry; show on entry detail.
+### 6. Calculated fields with test bench (Sandeep — fridge delta example)
+- Add `calculated` field type: formula references other fields by id (e.g. `display - reference`), with a `limits` block.
+- Mini test bench in `CreateTemplate`: enter sample values, see verdict trace live. Reuses `src/lib/evaluation.ts`.
 
-### Phase B — Review-by-exception parity with P0.5/P0.6
-5. **Filter chips** in `ReviewDashboard`: Exceptions only, Overdue (SLA), My logbooks, Logbook type, Site, Assignee. Sort: oldest-exception first when "Exceptions" active.
-6. **SLA breach flag** on review cards.
-7. **Full ALCOA++ audit trail** in `EntryDetailDrawer` (actor, prior→new, reason code, version hash, captured + synced timestamps, trace).
-8. **Export bundle** action — generates a manifest preview (entries / audit / signatures / linked WOs / traces / SHA-256) for the selected scope.
+### 7. Bidirectional event ↔ logbook linkage (Vicki, Brian)
+- In `LinkedRamContext`, add "Auto-generated entries": PM/calibration completion shows up as a system-authored entry on the timeline.
+- On `LogbookHistory`, unified asset timeline: entries + work orders + PMs + permits interleaved (Mathew/Vicki's mental model), with filter toggle.
+- Free-text linkage chips for **work order #** and **permit #** (Brian, Graham) that resolve to mock RAM records.
 
-### Phase C — Offline + RAM linkage signal
-9. Add persistent **offline status bar** + queued-count to AppLayout; surface captured-vs-synced timestamps on entries.
-10. On instrument entries, render a **"Linked RAM context"** panel (latest calibration, open WOs) — mock data.
+### 8. Multi-asset / room-level entry (Graham, Pablo, Phyllis)
+- Allow an entry to bind to a **location node** or **parent system** in addition to a single asset.
+- On bind, checklist of child assets with "apply to all / select subset" toggle.
+- Child asset timelines show parent entry with a "Room-level" chip.
 
-### Phase D — Authoring catches up to Evaluation Service vocabulary
-11. Extend field library in `CreateTemplate` with **numeric+limits, pass/fail, controlled list, photo, controlled text, e-sign meaning**.
-12. Add a **visual criteria tree** (AND/OR comparisons) and a **formula editor with test bench** on TemplateDetail.
-13. Add **scope binding** UI: per (site/area/asset) assign who can Initiate / Perform / Verify / Review.
+## Tier 3 — Access model & polish
 
-### Phase E — P1 polish
-14. Mobile **photo/attachment capture** affordance in entry form.
-15. **Voice-to-text** mic on Textarea fields.
-16. Supervisor **rounds-completion** view (small dashboard).
+### 9. Lighter access tier (Pablo, Cindy, Mathew)
+- Introduce a `logbookOnly` role for the mock user from #1.
+- "License: Logbook user (no seat consumed)" pill in `LocationSettings` to make the licensing story visible to Vicki/Cindy.
 
-### Out of scope for now (P2 / Non-Goals)
-- Utility/Facility Rounds, Shift Handover, full MES/eQMS, customer-authored AI, unit dimensional analysis.
+### 10. Required-field nuance & edit justification (Vicki, Cindy)
+- Templates declare `required` per field with a "soft required" option (warn, don't block).
+- Any post-sign edit opens a Justification drawer; reason + e-sign captured in audit trail (RAM Request #10 with Vicki's audit nuance).
 
-## 5. Recommended next step
+### 11. Validation niceties (Cindy, Jonathan)
+- Number fields reject alpha input.
+- Block entry creation against retired assets (banner on `AssetLogbooks`).
+- Start/end date sanity check.
 
-Start with **Phase A (items 1–4)** since it's where the spec is most differentiated ("logbook entry as evidence, not as form") and where our current Execute flow visibly diverges. Each item is a small, independent UI change against existing files (`ESignDrawer`, `LogbookEntryForm`, `EntryDetailDrawer`, `mockAssets.ts`).
+## Tier 4 — Parking lot
 
-Want me to kick off Phase A, or pick specific items first?
+R3→R4 migration UX, voice-to-text, supervisor rounds dashboard.
+
+## Files touched (high level)
+
+- `src/App.tsx` — `/login` route + idle-timeout wrapper.
+- New: `src/pages/Login.tsx`, `src/components/ram/ActionMenuSheet.tsx`, `src/components/ram/PhotoField.tsx`, `src/components/ram/AssetTimeline.tsx`, `src/components/ram/JustificationDrawer.tsx`, `src/hooks/useCurrentUser.tsx`.
+- `src/components/ram/ESignDrawer.tsx` — extract PIN/badge visuals into a shared component, add `documented` meaning.
+- `src/components/ram/StatusBar.tsx` — current-user chip, switch-user.
+- `src/components/ram/EntryDetailDrawer.tsx` — photo comparison strip, justification trail.
+- `src/components/ram/LinkedRamContext.tsx` — auto-generated entries section.
+- `src/pages/LogbookEntryForm.tsx` — action menu integration, photo field, soft review banner, room-level binding control.
+- `src/pages/LogbookHistory.tsx` — unified timeline toggle.
+- `src/pages/TemplateDetail.tsx` + `src/pages/CreateTemplate.tsx` — scope-binding matrix, expanded field library, formula test bench.
+- `src/pages/ReviewDashboard.tsx` — review-backlog badge, policy-aware filtering.
+- `src/pages/LocationSettings.tsx` — logbook-user license pill.
+- `src/data/mockLogbooks.ts`, `src/data/mockAssets.ts` — `reviewPolicy`/`reviewCadence`, `photo` + `calculated` field types, auto-generated entry samples, permit/WO link fields.
+
+## Suggested sequencing
+
+1. **Phase 1:** Login (PIN/badge) + idle reset, action menu, soft review gate + Documented meaning, photo attachments.
+2. **Phase 2:** Scope-binding matrix, calculated fields + test bench, event-to-logbook reverse flow, multi-asset binding.
+3. **Phase 3:** Logbook-only license tier, edit justification, validation niceties.
+
+Want me to kick off Phase 1, or start with just the login + idle-reset slice so we can demo the full "tablet wakes → tap badge → enter → sign → idle → lock" loop first?

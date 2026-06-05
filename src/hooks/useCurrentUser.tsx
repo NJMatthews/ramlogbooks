@@ -72,10 +72,17 @@ export function CurrentUserProvider({ children }: { children: ReactNode }) {
   );
 }
 
+const noopUser: CurrentUserContextValue = {
+  currentUser: null,
+  signIn: () => {},
+  signOut: () => {},
+  bumpActivity: () => {},
+  lastIdleReason: null,
+};
+
 export function useCurrentUser() {
   const ctx = useContext(CurrentUserContext);
-  if (!ctx) throw new Error("useCurrentUser must be used within CurrentUserProvider");
-  return ctx;
+  return ctx ?? noopUser;
 }
 
 export const IDLE_TIMEOUT_SECONDS = IDLE_TIMEOUT_MS / 1000;

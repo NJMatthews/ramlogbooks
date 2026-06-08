@@ -552,12 +552,18 @@ function DetailGridView({
             )}
 
             {/* Actions */}
-            <div className="mt-ram-md flex gap-ram-sm border-t border-border pt-ram-md" onClick={(e) => e.stopPropagation()}>
+            <div className="mt-ram-md flex flex-wrap gap-ram-sm border-t border-border pt-ram-md" onClick={(e) => e.stopPropagation()}>
               <button onClick={() => onApprove(entry.id)} className="flex items-center gap-ram-xxs p-ram-sm text-success-400 hover:bg-success-100 rounded-ram-xs text-text-xs font-medium">
                 <CheckCircle className="h-4 w-4" /> Approve
               </button>
               <button onClick={() => onReject(entry.id)} className="flex items-center gap-ram-xxs p-ram-sm text-error-600 hover:bg-error-100 rounded-ram-xs text-text-xs font-medium">
                 <XCircle className="h-4 w-4" /> Reject
+              </button>
+              <button onClick={() => onReturn(entry.id)} className="flex items-center gap-ram-xxs p-ram-sm text-warning-400 hover:bg-warning-100 rounded-ram-xs text-text-xs font-medium">
+                <CornerUpLeft className="h-4 w-4" /> Return
+              </button>
+              <button onClick={() => onEscalate(entry.id)} className="flex items-center gap-ram-xxs p-ram-sm text-error-600 hover:bg-error-100 rounded-ram-xs text-text-xs font-medium">
+                <ShieldAlert className="h-4 w-4" /> Escalate
               </button>
               <button onClick={() => onView(entry)} className="flex items-center gap-ram-xxs p-ram-sm text-brand-500 hover:bg-brand-100 rounded-ram-xs text-text-xs font-medium ml-auto">
                 <Eye className="h-4 w-4" /> View

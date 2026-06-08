@@ -728,10 +728,12 @@ interface GroupRowsProps {
   onToggleSelect: (id: string) => void;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
+  onReturn: (id: string) => void;
+  onEscalate: (id: string) => void;
   onView: (entry: ReviewEntry) => void;
 }
 
-function GroupRows({ group, collapsed, onToggle, selected, onToggleSelect, onApprove, onReject, onView }: GroupRowsProps) {
+function GroupRows({ group, collapsed, onToggle, selected, onToggleSelect, onApprove, onReject, onReturn, onEscalate, onView }: GroupRowsProps) {
   return (
     <>
       <tr className="bg-gray-100 cursor-pointer" onClick={onToggle}>
@@ -777,9 +779,11 @@ function GroupRows({ group, collapsed, onToggle, selected, onToggleSelect, onApp
           </td>
           <td className="px-ram-lg" onClick={(e) => e.stopPropagation()}>
             <div className="flex gap-ram-xxs">
-              <button onClick={() => onApprove(entry.id)} className="p-1 text-success-400 hover:text-success-900"><CheckCircle className="h-4 w-4" /></button>
-              <button onClick={() => onReject(entry.id)} className="p-1 text-error-600 hover:text-error-900"><XCircle className="h-4 w-4" /></button>
-              <button onClick={() => onView(entry)} className="p-1 text-brand-500 hover:text-brand-600"><Eye className="h-4 w-4" /></button>
+              <button title="Approve" onClick={() => onApprove(entry.id)} className="p-1 text-success-400 hover:text-success-900"><CheckCircle className="h-4 w-4" /></button>
+              <button title="Reject" onClick={() => onReject(entry.id)} className="p-1 text-error-600 hover:text-error-900"><XCircle className="h-4 w-4" /></button>
+              <button title="Return for correction" onClick={() => onReturn(entry.id)} className="p-1 text-warning-400 hover:text-warning-500"><CornerUpLeft className="h-4 w-4" /></button>
+              <button title="Escalate to deviation" onClick={() => onEscalate(entry.id)} className="p-1 text-error-600 hover:text-error-900"><ShieldAlert className="h-4 w-4" /></button>
+              <button title="View" onClick={() => onView(entry)} className="p-1 text-brand-500 hover:text-brand-600"><Eye className="h-4 w-4" /></button>
             </div>
           </td>
         </tr>

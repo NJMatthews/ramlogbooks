@@ -54,7 +54,7 @@ export default function ReviewDashboard() {
       if (statusFilter !== "all" && e.status !== statusFilter) return false;
       if (showExceptions && !e.hasException) return false;
       if (showOverdue && !e.slaBreached) return false;
-      if (showMine && e.assignee !== CURRENT_USER) return false;
+      if (showMine && e.assignee !== currentUserName) return false;
       if (logbookFilter !== "all" && e.logbook !== logbookFilter) return false;
       if (siteFilter !== "all" && (e.site ?? e.location) !== siteFilter) return false;
       if (assigneeFilter !== "all" && e.assignee !== assigneeFilter) return false;
@@ -96,7 +96,7 @@ export default function ReviewDashboard() {
     total: entries.length,
     exceptions: entries.filter((e) => e.hasException && e.status === "pending-review").length,
     overdue: entries.filter((e) => e.slaBreached && e.status === "pending-review").length,
-    mine: entries.filter((e) => e.assignee === CURRENT_USER && e.status === "pending-review").length,
+    mine: entries.filter((e) => e.assignee === currentUserName && e.status === "pending-review").length,
   }), [entries]);
 
   const toggleGroup = (label: string) => {

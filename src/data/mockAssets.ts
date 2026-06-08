@@ -62,12 +62,22 @@ export interface LogbookInstance {
   family?: LogbookFamily;
 }
 
-export type ReviewStatus = "pending-review" | "approved" | "rejected" | "correction-requested";
+export type ReviewStatus =
+  | "pending-review"
+  | "approved"
+  | "rejected"
+  | "correction-requested"
+  | "returned"
+  | "deviation";
 
 export interface AuditTrailEntry {
   action: string;
   timestamp: string;
   actor?: string;
+  /** Free-form context, e.g. field name + old/new value, or signature meaning */
+  detail?: string;
+  /** Optional verdict for events tied to field evaluation */
+  verdict?: "pass" | "fail" | "pending";
   priorValue?: string;
   newValue?: string;
   reasonCode?: string;
@@ -104,6 +114,10 @@ export interface ReviewEntry {
   templateHash?: string;
   linkedWorkRequest?: string;
   signatureMeaning?: "Performed" | "Verified" | "Reviewed";
+  /** Reason captured when an entry is returned to the operator for correction */
+  returnReason?: string;
+  /** Deviation reference when an entry is escalated to QA deviation */
+  deviationRef?: string;
 }
 
 // ── Mock Data ───────────────────────────────────────────────

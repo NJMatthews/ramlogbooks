@@ -586,6 +586,8 @@ function MobileGroupedView({
   toggleSelect,
   onApprove,
   onReject,
+  onReturn,
+  onEscalate,
   onView,
 }: {
   groups: { label: string; totalEntries: number; pendingCount: number; entries: ReviewEntry[] }[];
@@ -596,6 +598,8 @@ function MobileGroupedView({
   toggleSelect: (id: string) => void;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
+  onReturn: (id: string) => void;
+  onEscalate: (id: string) => void;
   onView: (entry: ReviewEntry) => void;
 }) {
   return (
@@ -635,10 +639,12 @@ function MobileGroupedView({
                   )}
                 </div>
               )}
-              <div className="mt-ram-lg flex gap-ram-md">
+              <div className="mt-ram-lg flex flex-wrap gap-ram-md">
                 <button onClick={() => onApprove(entry.id)} className="p-ram-md text-success-400 hover:bg-success-100 rounded-ram-xs"><CheckCircle className="h-5 w-5" /></button>
                 <button onClick={() => onReject(entry.id)} className="p-ram-md text-error-600 hover:bg-error-100 rounded-ram-xs"><XCircle className="h-5 w-5" /></button>
-                <button onClick={() => onView(entry)} className="p-ram-md text-brand-500 hover:bg-brand-100 rounded-ram-xs"><Eye className="h-5 w-5" /></button>
+                <button onClick={() => onReturn(entry.id)} className="p-ram-md text-warning-400 hover:bg-warning-100 rounded-ram-xs"><CornerUpLeft className="h-5 w-5" /></button>
+                <button onClick={() => onEscalate(entry.id)} className="p-ram-md text-error-600 hover:bg-error-100 rounded-ram-xs"><ShieldAlert className="h-5 w-5" /></button>
+                <button onClick={() => onView(entry)} className="p-ram-md text-brand-500 hover:bg-brand-100 rounded-ram-xs ml-auto"><Eye className="h-5 w-5" /></button>
               </div>
             </div>
           ))}

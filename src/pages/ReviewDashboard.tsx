@@ -452,6 +452,8 @@ function DetailGridView({
   toggleSelect,
   onApprove,
   onReject,
+  onReturn,
+  onEscalate,
   onView,
 }: {
   entries: ReviewEntry[];
@@ -460,6 +462,8 @@ function DetailGridView({
   toggleSelect: (id: string) => void;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
+  onReturn: (id: string) => void;
+  onEscalate: (id: string) => void;
   onView: (entry: ReviewEntry) => void;
 }) {
   const allSelected = entries.length > 0 && entries.every((e) => selected.has(e.id));

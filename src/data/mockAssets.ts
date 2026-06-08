@@ -232,9 +232,11 @@ const sampleFields: ReviewEntryField[] = [
 ];
 
 const sampleAudit: AuditTrailEntry[] = [
-  { action: "Created by J. Martinez", timestamp: "06:15 AM" },
-  { action: "E-signed", timestamp: "06:15 AM" },
-  { action: "Submitted for review", timestamp: "06:15 AM" },
+  { action: "Entry created", timestamp: "06:14 AM", actor: "J. Martinez", detail: "New entry started against Cleaning Log v2.1" },
+  { action: "Field updated", timestamp: "06:14 AM", actor: "J. Martinez", detail: "Cleaning Agent: — → IPA 70%" },
+  { action: "Field updated", timestamp: "06:14 AM", actor: "J. Martinez", detail: "Verification: — → Pass", verdict: "pass" },
+  { action: "E-signed as Performed", timestamp: "06:15 AM", actor: "J. Martinez", detail: "Signature meaning: Performed" },
+  { action: "Submitted to review queue", timestamp: "06:15 AM", actor: "J. Martinez", detail: "Routed to QA reviewer N. Matthews" },
 ];
 
 const sampleFieldsWithException: ReviewEntryField[] = [
@@ -248,12 +250,13 @@ const sampleFieldsWithException: ReviewEntryField[] = [
 ];
 
 const richAudit = (operator: string): AuditTrailEntry[] => [
-  { action: "Entry created", timestamp: "06:14:02 AM", actor: operator, hash: "a3f1…9c2b" },
-  { action: "Field set: Temperature", timestamp: "06:14:48 AM", actor: operator, priorValue: "—", newValue: "26.1 °C" },
-  { action: "Exception acknowledged", timestamp: "06:15:11 AM", actor: operator, reasonCode: "OOL-IMPACT" },
-  { action: "E-signed (Performed)", timestamp: "06:15:34 AM", actor: operator, hash: "b8d2…41ee" },
-  { action: "Synced from offline queue", timestamp: "06:18:02 AM" },
-  { action: "Submitted for review", timestamp: "06:18:03 AM" },
+  { action: "Entry created", timestamp: "06:14:02 AM", actor: operator, detail: "Entry opened on tablet", hash: "a3f1…9c2b" },
+  { action: "Field updated", timestamp: "06:14:48 AM", actor: operator, detail: "Temperature: — → 26.1 °C", priorValue: "—", newValue: "26.1 °C", verdict: "fail" },
+  { action: "Field updated", timestamp: "06:14:52 AM", actor: operator, detail: "Humidity: — → 48.0 %RH", priorValue: "—", newValue: "48.0 %RH", verdict: "pass" },
+  { action: "Exception acknowledged", timestamp: "06:15:11 AM", actor: operator, detail: "Out-of-limit impact assessment captured", reasonCode: "OOL-IMPACT" },
+  { action: "E-signed as Performed", timestamp: "06:15:34 AM", actor: operator, detail: "Signature meaning: Performed", hash: "b8d2…41ee" },
+  { action: "Synced from offline queue", timestamp: "06:18:02 AM", detail: "Captured offline; sync pushed after reconnect" },
+  { action: "Submitted to review queue", timestamp: "06:18:03 AM", detail: "Routed to QA reviewer N. Matthews" },
 ];
 
 export const mockReviewEntries: ReviewEntry[] = [

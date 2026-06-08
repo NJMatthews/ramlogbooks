@@ -372,6 +372,58 @@ export default function ReviewDashboard() {
           </div>
         </div>
       )}
+
+      {/* Return-for-correction modal */}
+      {returnTarget && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-foreground/60">
+          <div className="mx-ram-xl max-w-md w-full rounded-ram-xl bg-card p-ram-3xl shadow-ram-lg">
+            <h3 className="text-text-lg font-extrabold text-foreground">Return for Correction</h3>
+            <p className="mt-ram-sm text-text-sm text-gray-600">Reason will be visible to the operator. Minimum 10 characters.</p>
+            <textarea
+              value={returnReason}
+              onChange={(e) => setReturnReason(e.target.value)}
+              placeholder="Describe what needs to be corrected"
+              className="mt-ram-lg w-full h-28 rounded-ram-xs border border-gray-300 bg-background px-ram-lg py-ram-md text-text-md text-foreground placeholder:text-gray-500 resize-none outline-none focus:border-brand-500"
+            />
+            <div className="mt-ram-sm text-text-xs text-gray-500">{returnReason.trim().length}/10</div>
+            <div className="mt-ram-xl flex gap-ram-md">
+              <button onClick={() => setReturnTarget(null)} className="flex-1 rounded-ram-md border border-border py-ram-lg text-text-sm font-medium text-foreground">Cancel</button>
+              <button
+                onClick={confirmReturn}
+                disabled={returnReason.trim().length < 10}
+                className={cn(
+                  "flex-1 rounded-ram-md py-ram-lg text-text-sm font-extrabold text-primary-foreground transition-opacity",
+                  returnReason.trim().length < 10 ? "bg-warning-400/50 cursor-not-allowed" : "bg-warning-400 hover:opacity-90"
+                )}
+              >
+                Confirm Return
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Escalate-to-deviation modal */}
+      {escalateTarget && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-foreground/60">
+          <div className="mx-ram-xl max-w-md w-full rounded-ram-xl bg-card p-ram-3xl shadow-ram-lg">
+            <h3 className="text-text-lg font-extrabold text-foreground">Escalate to Deviation</h3>
+            <p className="mt-ram-sm text-text-sm text-gray-600">Link an existing deviation or leave blank to auto-assign a placeholder.</p>
+            <input
+              value={escalateRef}
+              onChange={(e) => setEscalateRef(e.target.value)}
+              placeholder="DEV-XXXX or leave blank to auto-assign"
+              className="mt-ram-lg w-full h-11 rounded-ram-xs border border-gray-300 bg-background px-ram-lg text-text-md text-foreground placeholder:text-gray-500 outline-none focus:border-brand-500"
+            />
+            <div className="mt-ram-xl flex gap-ram-md">
+              <button onClick={() => setEscalateTarget(null)} className="flex-1 rounded-ram-md border border-border py-ram-lg text-text-sm font-medium text-foreground">Cancel</button>
+              <button onClick={confirmEscalate} className="flex-1 rounded-ram-md bg-error-600 py-ram-lg text-text-sm font-extrabold text-primary-foreground hover:opacity-90">
+                Confirm Escalation
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }

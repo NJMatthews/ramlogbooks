@@ -665,6 +665,8 @@ function DesktopGroupedTable({
   toggleSelect,
   onApprove,
   onReject,
+  onReturn,
+  onEscalate,
   onView,
 }: {
   groups: { label: string; totalEntries: number; pendingCount: number; entries: ReviewEntry[] }[];
@@ -676,6 +678,8 @@ function DesktopGroupedTable({
   toggleSelect: (id: string) => void;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
+  onReturn: (id: string) => void;
+  onEscalate: (id: string) => void;
   onView: (entry: ReviewEntry) => void;
 }) {
   return (
@@ -690,7 +694,7 @@ function DesktopGroupedTable({
             <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Asset</th>
             <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Operator</th>
             <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Status</th>
-            <th className="w-20 px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Actions</th>
+            <th className="w-36 px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -704,6 +708,8 @@ function DesktopGroupedTable({
               onToggleSelect={toggleSelect}
               onApprove={onApprove}
               onReject={onReject}
+              onReturn={onReturn}
+              onEscalate={onEscalate}
               onView={onView}
             />
           ))}

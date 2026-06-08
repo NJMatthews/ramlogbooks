@@ -19,7 +19,10 @@ type ViewMode = "grouped" | "grid";
 
 export default function ReviewDashboard() {
   const isMobile = useIsMobile();
-  
+  const { currentUser } = useCurrentUser();
+  const currentUserName = currentUser?.name ?? "";
+  const { entries, setEntries } = useReviewEntries();
+
   const [dateRange, setDateRange] = useState<DateRange>("7days");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");
@@ -28,7 +31,10 @@ export default function ReviewDashboard() {
   const [detailEntry, setDetailEntry] = useState<ReviewEntry | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [confirmAction, setConfirmAction] = useState<{ action: "approve" | "reject"; ids: string[] } | null>(null);
-  const [entries, setEntries] = useState(mockReviewEntries);
+  const [returnTarget, setReturnTarget] = useState<string | null>(null);
+  const [returnReason, setReturnReason] = useState("");
+  const [escalateTarget, setEscalateTarget] = useState<string | null>(null);
+  const [escalateRef, setEscalateRef] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("grouped");
   // Phase B filter chips
   const [showExceptions, setShowExceptions] = useState(false);
@@ -39,9 +45,9 @@ export default function ReviewDashboard() {
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
   const [exportOpen, setExportOpen] = useState(false);
 
-  const logbookOptions = useMemo(() => Array.from(new Set(entries.map((e) => e.logbook))).sort(), [entries]);
-  const siteOptions = useMemo(() => Array.from(new Set(entries.map((e) => e.site ?? e.location))).sort(), [entries]);
-  const assigneeOptions = useMemo(() => Array.from(new Set(entries.map((e) => e.assignee).filter(Boolean) as string[])).sort(), [entries]);
+  const logbookOptions = useMemo<string[]>(() => Array.from(new Set(entries.map((e) => e.logbook))).sort(), [entries]);
+  const siteOptions = useMemo<string[]>(() => Array.from(new Set(entries.map((e) => e.site ?? e.location))).sort(), [entries]);
+  const assigneeOptions = useMemo<string[]>(() => Array.from(new Set(entries.map((e) => e.assignee).filter(Boolean) as string[])).sort(), [entries]);
 
   const filteredEntries = useMemo(() => {
     const out = entries.filter((e) => {

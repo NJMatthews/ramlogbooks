@@ -174,70 +174,18 @@ export default function LogbookEntryForm() {
               </div>
             )}
 
-            {state.formFields.map((field) => {
-              const ev = evaluateField(field);
-              const onChange = (v: string) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v });
-
-              if (field.type === "textarea") {
-                return (
-                  <RAMTextarea
-                    key={field.id}
-                    label={field.label}
-                    value={field.value}
-                    onChange={onChange}
-                    placeholder="Enter observations..."
-                    expanded
-                  />
-                );
-              }
-              if (field.type === "toggle") {
-                return (
-                  <div key={field.id} className="space-y-ram-sm">
-                    <RAMToggle
-                      label={field.label}
-                      value={field.value === "pass"}
-                      onChange={(v) => onChange(v ? "pass" : "fail")}
-                    />
-                    <FieldVerdict field={field} evaluation={ev} />
-                  </div>
-                );
-              }
-              if (field.type === "dropdown") {
-                return <DropdownField key={field.id} field={field} onChange={onChange} />;
-              }
-              if (field.type === "status") {
-                return <StatusField key={field.id} field={field} onChange={onChange} />;
-              }
-              if (field.type === "linked-wo") {
-                return <LinkedWOField key={field.id} field={field} onChange={onChange} />;
-              }
-              if (field.type === "attachment") {
-                return <AttachmentField key={field.id} field={field} onChange={onChange} />;
-              }
-              if (field.type === "parts-used") {
-                return <PartsUsedField key={field.id} field={field} onChange={onChange} />;
-              }
-              if (field.type === "triplet") {
-                return <TripletField key={field.id} field={field} onChange={onChange} />;
-              }
-
-              return (
-                <div key={field.id} className="space-y-ram-sm">
-                  <RAMInput
-                    label={field.label}
-                    value={field.value}
-                    onChange={(v) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v })}
-                    readOnly={field.readOnly}
-                    type={field.type === "number" ? "number" : "text"}
-                    leadingIcon={field.type === "datetime" ? <Calendar className="h-4 w-4" /> : undefined}
-                    needsConfirmation={field.timeSensitive && field.prefilled}
-                    confirmed={state.confirmedFields.has(field.id)}
-                    onConfirm={() => dispatch({ type: "CONFIRM_FIELD", fieldId: field.id })}
-                  />
-                  <FieldVerdict field={field} evaluation={ev} />
-                </div>
-              );
-            })}
+            {state.formFields.map((field) => (
+              <div key={field.id}>
+                {renderField(
+                  field,
+                  (v) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v }),
+                  {
+                    confirmed: state.confirmedFields.has(field.id),
+                    onConfirm: () => dispatch({ type: "CONFIRM_FIELD", fieldId: field.id }),
+                  }
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>

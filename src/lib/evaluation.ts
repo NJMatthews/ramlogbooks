@@ -1,4 +1,4 @@
-import type { FormField } from "@/data/mockLogbooks";
+import type { FormField, FormFieldType } from "@/data/mockLogbooks";
 
 export type Verdict = "pass" | "fail" | "pending";
 
@@ -10,12 +10,18 @@ export interface FieldEvaluation {
   summary?: string;
 }
 
+const PENDING_NO_CRITERION: FieldEvaluation = {
+  verdict: "pending",
+  trace: "No criterion attached",
+};
+
+type Evaluator = (field: FormField) => FieldEvaluation;
+
 /**
- * Local, offline evaluation of a single field against its limits / criteria.
- * Mirrors the Evaluation Service posture: deterministic, no network.
+ * Strategy map: register a new field type here without touching evaluateField.
  */
-export function evaluateField(field: FormField): FieldEvaluation {
-  if (field.type === "toggle") {
+const evaluators: Partial<Record<FormFieldType, Evaluator>> = {
+  toggle: (field) => {
     if (!field.value) return { verdict: "pending", trace: "Awaiting selection" };
     const expected = field.passWhen ?? "pass";
     const pass = field.value === expected;
@@ -24,9 +30,10 @@ export function evaluateField(field: FormField): FieldEvaluation {
       trace: `Toggle = "${field.value}" · expected "${expected}"`,
       summary: pass ? "Within criterion" : "Failed check",
     };
-  }
+  },
 
-  if (field.type === "number" && field.limits) {
+  number: (field) => {
+    if (!field.limits) return PENDING_NO_CRITERION;
     if (field.value.trim() === "") return { verdict: "pending", trace: "Awaiting value" };
     const v = Number(field.value);
     if (Number.isNaN(v)) return { verdict: "pending", trace: "Value is not numeric" };
@@ -53,9 +60,17 @@ export function evaluateField(field: FormField): FieldEvaluation {
       summary: "Within limits",
       trace: parts.join(" AND "),
     };
-  }
+  },
+};
 
-  return { verdict: "pending", trace: "No criterion attached" };
+/**
+ * Local, offline evaluation of a single field against its limits / criteria.
+ * Dispatches to a per-type evaluator from the strategy map.
+ */
+export function evaluateField(field: FormField): FieldEvaluation {
+  const evaluator = evaluators[field.type];
+  if (!evaluator) return PENDING_NO_CRITERION;
+  return evaluator(field);
 }
 
 export function evaluateAll(fields: FormField[]): Record<string, FieldEvaluation> {

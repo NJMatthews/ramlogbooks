@@ -93,11 +93,13 @@ export default function ReviewDashboard() {
     pending: entries.filter((e) => e.status === "pending-review").length,
     approved: entries.filter((e) => e.status === "approved").length,
     rejected: entries.filter((e) => e.status === "rejected").length,
+    returned: entries.filter((e) => e.status === "returned").length,
+    deviation: entries.filter((e) => e.status === "deviation").length,
     total: entries.length,
     exceptions: entries.filter((e) => e.hasException && e.status === "pending-review").length,
     overdue: entries.filter((e) => e.slaBreached && e.status === "pending-review").length,
     mine: entries.filter((e) => e.assignee === currentUserName && e.status === "pending-review").length,
-  }), [entries]);
+  }), [entries, currentUserName]);
 
   const toggleGroup = (label: string) => {
     setCollapsedGroups((prev) => {
@@ -134,6 +136,36 @@ export default function ReviewDashboard() {
 
   const handleReject = (id: string) => {
     setEntries((prev) => prev.map((e) => e.id === id ? { ...e, status: "rejected" as ReviewStatus } : e));
+    setDetailEntry(null);
+  };
+
+  const openReturn = (id: string) => {
+    setReturnTarget(id);
+    setReturnReason("");
+  };
+
+  const confirmReturn = () => {
+    if (!returnTarget || returnReason.trim().length < 10) return;
+    const id = returnTarget;
+    const reason = returnReason.trim();
+    setEntries((prev) => prev.map((e) => e.id === id ? { ...e, status: "returned" as ReviewStatus, returnReason: reason } : e));
+    setReturnTarget(null);
+    setReturnReason("");
+    setDetailEntry(null);
+  };
+
+  const openEscalate = (id: string) => {
+    setEscalateTarget(id);
+    setEscalateRef("");
+  };
+
+  const confirmEscalate = () => {
+    if (!escalateTarget) return;
+    const id = escalateTarget;
+    const ref = escalateRef.trim() || `DEV-${Math.floor(10000 + Math.random() * 89999)}`;
+    setEntries((prev) => prev.map((e) => e.id === id ? { ...e, status: "deviation" as ReviewStatus, deviationRef: ref } : e));
+    setEscalateTarget(null);
+    setEscalateRef("");
     setDetailEntry(null);
   };
 

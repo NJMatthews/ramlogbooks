@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Download, CheckCircle, XCircle, Eye, ChevronDown, ChevronRight, List, Grid3X3, AlertTriangle, Clock, Wrench } from "lucide-react";
+import { Download, CheckCircle, XCircle, Eye, ChevronDown, ChevronRight, List, Grid3X3, AlertTriangle, Clock, Wrench, CornerUpLeft, ShieldAlert } from "lucide-react";
 import { AppLayout } from "@/components/ram/AppLayout";
 import { HeaderNav } from "@/components/ram/HeaderNav";
 import { SearchBar } from "@/components/ram/SearchBar";
@@ -8,14 +8,14 @@ import { EntryDetailDrawer } from "@/components/ram/EntryDetailDrawer";
 import { FilterChip } from "@/components/ram/FilterChip";
 import { ExportBundleModal } from "@/components/ram/ExportBundleModal";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { mockReviewEntries, type ReviewEntry, type ReviewStatus } from "@/data/mockAssets";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useReviewEntries } from "@/hooks/useReviewEntries";
+import { type ReviewEntry, type ReviewStatus } from "@/data/mockAssets";
 import { cn } from "@/lib/utils";
 
 type DateRange = "today" | "7days" | "30days";
 type StatusFilter = "all" | ReviewStatus;
 type ViewMode = "grouped" | "grid";
-
-const CURRENT_USER = "N. Matthews";
 
 export default function ReviewDashboard() {
   const isMobile = useIsMobile();

@@ -266,10 +266,12 @@ export default function ReviewDashboard() {
           </div>
 
           {/* Clickable stat cards as filters */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-ram-lg">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-ram-lg">
             <StatCard label="Pending Review" value={stats.pending} color="text-warning-400" active={statusFilter === "pending-review"} onClick={() => handleStatClick("pending-review")} />
             <StatCard label="Approved" value={stats.approved} color="text-success-400" active={statusFilter === "approved"} onClick={() => handleStatClick("approved")} />
             <StatCard label="Rejected" value={stats.rejected} color="text-error-600" active={statusFilter === "rejected"} onClick={() => handleStatClick("rejected")} />
+            <StatCard label="Returned" value={stats.returned} color="text-warning-400" active={statusFilter === "returned"} onClick={() => handleStatClick("returned")} />
+            <StatCard label="Deviation" value={stats.deviation} color="text-error-600" active={statusFilter === "deviation"} onClick={() => handleStatClick("deviation")} />
             <StatCard label="Total Entries" value={stats.total} color="text-foreground" active={statusFilter === "all"} onClick={() => handleStatClick("all")} />
           </div>
 
@@ -286,6 +288,8 @@ export default function ReviewDashboard() {
                 toggleSelect={toggleSelect}
                 onApprove={handleApprove}
                 onReject={handleReject}
+                onReturn={openReturn}
+                onEscalate={openEscalate}
                 onView={setDetailEntry}
               />
             ) : (
@@ -299,6 +303,8 @@ export default function ReviewDashboard() {
                 toggleSelect={toggleSelect}
                 onApprove={handleApprove}
                 onReject={handleReject}
+                onReturn={openReturn}
+                onEscalate={openEscalate}
                 onView={setDetailEntry}
               />
             )
@@ -311,6 +317,8 @@ export default function ReviewDashboard() {
               toggleSelect={toggleSelect}
               onApprove={handleApprove}
               onReject={handleReject}
+              onReturn={openReturn}
+              onEscalate={openEscalate}
               onView={setDetailEntry}
             />
           )}
@@ -333,7 +341,7 @@ export default function ReviewDashboard() {
       </div>
 
       {/* Entry detail drawer */}
-      <EntryDetailDrawer entry={detailEntry} onClose={() => setDetailEntry(null)} onApprove={handleApprove} onReject={handleReject} />
+      <EntryDetailDrawer entry={detailEntry} onClose={() => setDetailEntry(null)} onApprove={handleApprove} onReject={handleReject} onReturn={openReturn} onEscalate={openEscalate} />
 
       <ExportBundleModal
         open={exportOpen}

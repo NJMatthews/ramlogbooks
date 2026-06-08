@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-type Status = "open" | "in-progress" | "done" | "error" | "synced" | "conflict" | "awaiting" | "issue" | "success" | "pending-review" | "approved" | "rejected" | "correction-requested" | "published" | "draft" | "archived";
+type Status = "open" | "in-progress" | "done" | "error" | "synced" | "conflict" | "awaiting" | "issue" | "success" | "pending-review" | "approved" | "rejected" | "correction-requested" | "returned" | "deviation" | "published" | "draft" | "archived";
 
 const statusConfig: Record<Status, { label: string; bg: string; text: string }> = {
   open: { label: "Open", bg: "bg-gray-200", text: "text-gray-800" },
@@ -16,6 +16,8 @@ const statusConfig: Record<Status, { label: string; bg: string; text: string }> 
   approved: { label: "Approved", bg: "bg-success-100", text: "text-success-400" },
   rejected: { label: "Rejected", bg: "bg-error-100", text: "text-error-600" },
   "correction-requested": { label: "Correction Requested", bg: "bg-brand-200", text: "text-brand-500" },
+  returned: { label: "Returned", bg: "bg-warning-100", text: "text-warning-400" },
+  deviation: { label: "Deviation", bg: "bg-error-100", text: "text-error-600" },
   published: { label: "Published", bg: "bg-success-100", text: "text-success-400" },
   draft: { label: "Draft", bg: "bg-warning-100", text: "text-warning-400" },
   archived: { label: "Archived", bg: "bg-gray-200", text: "text-gray-800" },

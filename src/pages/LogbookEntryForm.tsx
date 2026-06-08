@@ -2,31 +2,19 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AppLayout } from "@/components/ram/AppLayout";
 import { HeaderNav } from "@/components/ram/HeaderNav";
-import { RAMInput } from "@/components/ram/RAMInput";
-import { RAMTextarea } from "@/components/ram/RAMTextarea";
-import { RAMToggle } from "@/components/ram/RAMToggle";
 import { PaperEntryForm } from "@/components/ram/PaperEntryForm";
 import { ESignDrawer, type SignatureMeaning } from "@/components/ram/ESignDrawer";
 import { ExceptionDrawer } from "@/components/ram/ExceptionDrawer";
 import { SuccessDrawer } from "@/components/ram/SuccessDrawer";
-import { FieldVerdict } from "@/components/ram/FieldVerdict";
-import { FamilyChip } from "@/components/ram/FamilyChip";
 import { LinkedRamContext, ramContextByLogbookId } from "@/components/ram/LinkedRamContext";
-import {
-  DropdownField,
-  StatusField,
-  LinkedWOField,
-  AttachmentField,
-  PartsUsedField,
-  TripletField,
-} from "@/components/ram/EntryFieldRenderer";
+import { renderField } from "@/components/ram/renderField";
 import { Button } from "@/components/ui/button";
 import { useLogbook } from "@/hooks/useLogbookState";
 import { mockLogbooks } from "@/data/mockLogbooks";
 import { mockInstances } from "@/data/mockAssets";
 import { useDeviceLocation } from "@/hooks/useDeviceLocation";
-import { evaluateField, failedFields } from "@/lib/evaluation";
-import { Calendar, Zap, Clock, ArrowRight, AlertTriangle } from "lucide-react";
+import { failedFields } from "@/lib/evaluation";
+import { Zap, Clock, ArrowRight, AlertTriangle } from "lucide-react";
 
 // Simulated "last entry" values for Quick Fill
 const lastEntryValues: Record<string, string> = {
@@ -186,70 +174,18 @@ export default function LogbookEntryForm() {
               </div>
             )}
 
-            {state.formFields.map((field) => {
-              const ev = evaluateField(field);
-              const onChange = (v: string) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v });
-
-              if (field.type === "textarea") {
-                return (
-                  <RAMTextarea
-                    key={field.id}
-                    label={field.label}
-                    value={field.value}
-                    onChange={onChange}
-                    placeholder="Enter observations..."
-                    expanded
-                  />
-                );
-              }
-              if (field.type === "toggle") {
-                return (
-                  <div key={field.id} className="space-y-ram-sm">
-                    <RAMToggle
-                      label={field.label}
-                      value={field.value === "pass"}
-                      onChange={(v) => onChange(v ? "pass" : "fail")}
-                    />
-                    <FieldVerdict field={field} evaluation={ev} />
-                  </div>
-                );
-              }
-              if (field.type === "dropdown") {
-                return <DropdownField key={field.id} field={field} onChange={onChange} />;
-              }
-              if (field.type === "status") {
-                return <StatusField key={field.id} field={field} onChange={onChange} />;
-              }
-              if (field.type === "linked-wo") {
-                return <LinkedWOField key={field.id} field={field} onChange={onChange} />;
-              }
-              if (field.type === "attachment") {
-                return <AttachmentField key={field.id} field={field} onChange={onChange} />;
-              }
-              if (field.type === "parts-used") {
-                return <PartsUsedField key={field.id} field={field} onChange={onChange} />;
-              }
-              if (field.type === "triplet") {
-                return <TripletField key={field.id} field={field} onChange={onChange} />;
-              }
-
-              return (
-                <div key={field.id} className="space-y-ram-sm">
-                  <RAMInput
-                    label={field.label}
-                    value={field.value}
-                    onChange={(v) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v })}
-                    readOnly={field.readOnly}
-                    type={field.type === "number" ? "number" : "text"}
-                    leadingIcon={field.type === "datetime" ? <Calendar className="h-4 w-4" /> : undefined}
-                    needsConfirmation={field.timeSensitive && field.prefilled}
-                    confirmed={state.confirmedFields.has(field.id)}
-                    onConfirm={() => dispatch({ type: "CONFIRM_FIELD", fieldId: field.id })}
-                  />
-                  <FieldVerdict field={field} evaluation={ev} />
-                </div>
-              );
-            })}
+            {state.formFields.map((field) => (
+              <div key={field.id}>
+                {renderField(
+                  field,
+                  (v) => dispatch({ type: "UPDATE_FIELD", fieldId: field.id, value: v }),
+                  {
+                    confirmed: state.confirmedFields.has(field.id),
+                    onConfirm: () => dispatch({ type: "CONFIRM_FIELD", fieldId: field.id }),
+                  }
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>

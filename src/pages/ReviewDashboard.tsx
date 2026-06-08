@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Download, CheckCircle, XCircle, Eye, ChevronDown, ChevronRight, List, Grid3X3, AlertTriangle, Clock, Wrench } from "lucide-react";
+import { Download, CheckCircle, XCircle, Eye, ChevronDown, ChevronRight, List, Grid3X3, AlertTriangle, Clock, Wrench, CornerUpLeft, ShieldAlert } from "lucide-react";
 import { AppLayout } from "@/components/ram/AppLayout";
 import { HeaderNav } from "@/components/ram/HeaderNav";
 import { SearchBar } from "@/components/ram/SearchBar";
@@ -8,18 +8,21 @@ import { EntryDetailDrawer } from "@/components/ram/EntryDetailDrawer";
 import { FilterChip } from "@/components/ram/FilterChip";
 import { ExportBundleModal } from "@/components/ram/ExportBundleModal";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { mockReviewEntries, type ReviewEntry, type ReviewStatus } from "@/data/mockAssets";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useReviewEntries } from "@/hooks/useReviewEntries";
+import { type ReviewEntry, type ReviewStatus } from "@/data/mockAssets";
 import { cn } from "@/lib/utils";
 
 type DateRange = "today" | "7days" | "30days";
 type StatusFilter = "all" | ReviewStatus;
 type ViewMode = "grouped" | "grid";
 
-const CURRENT_USER = "N. Matthews";
-
 export default function ReviewDashboard() {
   const isMobile = useIsMobile();
-  
+  const { currentUser } = useCurrentUser();
+  const currentUserName = currentUser?.name ?? "";
+  const { entries, setEntries } = useReviewEntries();
+
   const [dateRange, setDateRange] = useState<DateRange>("7days");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");
@@ -28,7 +31,10 @@ export default function ReviewDashboard() {
   const [detailEntry, setDetailEntry] = useState<ReviewEntry | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [confirmAction, setConfirmAction] = useState<{ action: "approve" | "reject"; ids: string[] } | null>(null);
-  const [entries, setEntries] = useState(mockReviewEntries);
+  const [returnTarget, setReturnTarget] = useState<string | null>(null);
+  const [returnReason, setReturnReason] = useState("");
+  const [escalateTarget, setEscalateTarget] = useState<string | null>(null);
+  const [escalateRef, setEscalateRef] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("grouped");
   // Phase B filter chips
   const [showExceptions, setShowExceptions] = useState(false);
@@ -39,16 +45,16 @@ export default function ReviewDashboard() {
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
   const [exportOpen, setExportOpen] = useState(false);
 
-  const logbookOptions = useMemo(() => Array.from(new Set(entries.map((e) => e.logbook))).sort(), [entries]);
-  const siteOptions = useMemo(() => Array.from(new Set(entries.map((e) => e.site ?? e.location))).sort(), [entries]);
-  const assigneeOptions = useMemo(() => Array.from(new Set(entries.map((e) => e.assignee).filter(Boolean) as string[])).sort(), [entries]);
+  const logbookOptions = useMemo<string[]>(() => Array.from(new Set(entries.map((e) => e.logbook))).sort(), [entries]);
+  const siteOptions = useMemo<string[]>(() => Array.from(new Set(entries.map((e) => e.site ?? e.location))).sort(), [entries]);
+  const assigneeOptions = useMemo<string[]>(() => Array.from(new Set(entries.map((e) => e.assignee).filter(Boolean) as string[])).sort(), [entries]);
 
   const filteredEntries = useMemo(() => {
     const out = entries.filter((e) => {
       if (statusFilter !== "all" && e.status !== statusFilter) return false;
       if (showExceptions && !e.hasException) return false;
       if (showOverdue && !e.slaBreached) return false;
-      if (showMine && e.assignee !== CURRENT_USER) return false;
+      if (showMine && e.assignee !== currentUserName) return false;
       if (logbookFilter !== "all" && e.logbook !== logbookFilter) return false;
       if (siteFilter !== "all" && (e.site ?? e.location) !== siteFilter) return false;
       if (assigneeFilter !== "all" && e.assignee !== assigneeFilter) return false;
@@ -87,11 +93,13 @@ export default function ReviewDashboard() {
     pending: entries.filter((e) => e.status === "pending-review").length,
     approved: entries.filter((e) => e.status === "approved").length,
     rejected: entries.filter((e) => e.status === "rejected").length,
+    returned: entries.filter((e) => e.status === "returned").length,
+    deviation: entries.filter((e) => e.status === "deviation").length,
     total: entries.length,
     exceptions: entries.filter((e) => e.hasException && e.status === "pending-review").length,
     overdue: entries.filter((e) => e.slaBreached && e.status === "pending-review").length,
-    mine: entries.filter((e) => e.assignee === CURRENT_USER && e.status === "pending-review").length,
-  }), [entries]);
+    mine: entries.filter((e) => e.assignee === currentUserName && e.status === "pending-review").length,
+  }), [entries, currentUserName]);
 
   const toggleGroup = (label: string) => {
     setCollapsedGroups((prev) => {
@@ -128,6 +136,36 @@ export default function ReviewDashboard() {
 
   const handleReject = (id: string) => {
     setEntries((prev) => prev.map((e) => e.id === id ? { ...e, status: "rejected" as ReviewStatus } : e));
+    setDetailEntry(null);
+  };
+
+  const openReturn = (id: string) => {
+    setReturnTarget(id);
+    setReturnReason("");
+  };
+
+  const confirmReturn = () => {
+    if (!returnTarget || returnReason.trim().length < 10) return;
+    const id = returnTarget;
+    const reason = returnReason.trim();
+    setEntries((prev) => prev.map((e) => e.id === id ? { ...e, status: "returned" as ReviewStatus, returnReason: reason } : e));
+    setReturnTarget(null);
+    setReturnReason("");
+    setDetailEntry(null);
+  };
+
+  const openEscalate = (id: string) => {
+    setEscalateTarget(id);
+    setEscalateRef("");
+  };
+
+  const confirmEscalate = () => {
+    if (!escalateTarget) return;
+    const id = escalateTarget;
+    const ref = escalateRef.trim() || `DEV-${Math.floor(10000 + Math.random() * 89999)}`;
+    setEntries((prev) => prev.map((e) => e.id === id ? { ...e, status: "deviation" as ReviewStatus, deviationRef: ref } : e));
+    setEscalateTarget(null);
+    setEscalateRef("");
     setDetailEntry(null);
   };
 
@@ -228,10 +266,12 @@ export default function ReviewDashboard() {
           </div>
 
           {/* Clickable stat cards as filters */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-ram-lg">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-ram-lg">
             <StatCard label="Pending Review" value={stats.pending} color="text-warning-400" active={statusFilter === "pending-review"} onClick={() => handleStatClick("pending-review")} />
             <StatCard label="Approved" value={stats.approved} color="text-success-400" active={statusFilter === "approved"} onClick={() => handleStatClick("approved")} />
             <StatCard label="Rejected" value={stats.rejected} color="text-error-600" active={statusFilter === "rejected"} onClick={() => handleStatClick("rejected")} />
+            <StatCard label="Returned" value={stats.returned} color="text-warning-400" active={statusFilter === "returned"} onClick={() => handleStatClick("returned")} />
+            <StatCard label="Deviation" value={stats.deviation} color="text-error-600" active={statusFilter === "deviation"} onClick={() => handleStatClick("deviation")} />
             <StatCard label="Total Entries" value={stats.total} color="text-foreground" active={statusFilter === "all"} onClick={() => handleStatClick("all")} />
           </div>
 
@@ -248,6 +288,8 @@ export default function ReviewDashboard() {
                 toggleSelect={toggleSelect}
                 onApprove={handleApprove}
                 onReject={handleReject}
+                onReturn={openReturn}
+                onEscalate={openEscalate}
                 onView={setDetailEntry}
               />
             ) : (
@@ -261,6 +303,8 @@ export default function ReviewDashboard() {
                 toggleSelect={toggleSelect}
                 onApprove={handleApprove}
                 onReject={handleReject}
+                onReturn={openReturn}
+                onEscalate={openEscalate}
                 onView={setDetailEntry}
               />
             )
@@ -273,6 +317,8 @@ export default function ReviewDashboard() {
               toggleSelect={toggleSelect}
               onApprove={handleApprove}
               onReject={handleReject}
+              onReturn={openReturn}
+              onEscalate={openEscalate}
               onView={setDetailEntry}
             />
           )}
@@ -295,7 +341,7 @@ export default function ReviewDashboard() {
       </div>
 
       {/* Entry detail drawer */}
-      <EntryDetailDrawer entry={detailEntry} onClose={() => setDetailEntry(null)} onApprove={handleApprove} onReject={handleReject} />
+      <EntryDetailDrawer entry={detailEntry} onClose={() => setDetailEntry(null)} onApprove={handleApprove} onReject={handleReject} onReturn={openReturn} onEscalate={openEscalate} />
 
       <ExportBundleModal
         open={exportOpen}
@@ -321,6 +367,58 @@ export default function ReviewDashboard() {
               <button onClick={() => setConfirmAction(null)} className="flex-1 rounded-ram-md border border-border py-ram-lg text-text-sm font-medium text-foreground">Cancel</button>
               <button onClick={confirmBulk} className={cn("flex-1 rounded-ram-md py-ram-lg text-text-sm font-extrabold text-primary-foreground", confirmAction.action === "approve" ? "bg-success-400" : "bg-error-600")}>
                 Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Return-for-correction modal */}
+      {returnTarget && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-foreground/60">
+          <div className="mx-ram-xl max-w-md w-full rounded-ram-xl bg-card p-ram-3xl shadow-ram-lg">
+            <h3 className="text-text-lg font-extrabold text-foreground">Return for Correction</h3>
+            <p className="mt-ram-sm text-text-sm text-gray-600">Reason will be visible to the operator. Minimum 10 characters.</p>
+            <textarea
+              value={returnReason}
+              onChange={(e) => setReturnReason(e.target.value)}
+              placeholder="Describe what needs to be corrected"
+              className="mt-ram-lg w-full h-28 rounded-ram-xs border border-gray-300 bg-background px-ram-lg py-ram-md text-text-md text-foreground placeholder:text-gray-500 resize-none outline-none focus:border-brand-500"
+            />
+            <div className="mt-ram-sm text-text-xs text-gray-500">{returnReason.trim().length}/10</div>
+            <div className="mt-ram-xl flex gap-ram-md">
+              <button onClick={() => setReturnTarget(null)} className="flex-1 rounded-ram-md border border-border py-ram-lg text-text-sm font-medium text-foreground">Cancel</button>
+              <button
+                onClick={confirmReturn}
+                disabled={returnReason.trim().length < 10}
+                className={cn(
+                  "flex-1 rounded-ram-md py-ram-lg text-text-sm font-extrabold text-primary-foreground transition-opacity",
+                  returnReason.trim().length < 10 ? "bg-warning-400/50 cursor-not-allowed" : "bg-warning-400 hover:opacity-90"
+                )}
+              >
+                Confirm Return
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Escalate-to-deviation modal */}
+      {escalateTarget && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-foreground/60">
+          <div className="mx-ram-xl max-w-md w-full rounded-ram-xl bg-card p-ram-3xl shadow-ram-lg">
+            <h3 className="text-text-lg font-extrabold text-foreground">Escalate to Deviation</h3>
+            <p className="mt-ram-sm text-text-sm text-gray-600">Link an existing deviation or leave blank to auto-assign a placeholder.</p>
+            <input
+              value={escalateRef}
+              onChange={(e) => setEscalateRef(e.target.value)}
+              placeholder="DEV-XXXX or leave blank to auto-assign"
+              className="mt-ram-lg w-full h-11 rounded-ram-xs border border-gray-300 bg-background px-ram-lg text-text-md text-foreground placeholder:text-gray-500 outline-none focus:border-brand-500"
+            />
+            <div className="mt-ram-xl flex gap-ram-md">
+              <button onClick={() => setEscalateTarget(null)} className="flex-1 rounded-ram-md border border-border py-ram-lg text-text-sm font-medium text-foreground">Cancel</button>
+              <button onClick={confirmEscalate} className="flex-1 rounded-ram-md bg-error-600 py-ram-lg text-text-sm font-extrabold text-primary-foreground hover:opacity-90">
+                Confirm Escalation
               </button>
             </div>
           </div>
@@ -354,6 +452,8 @@ function DetailGridView({
   toggleSelect,
   onApprove,
   onReject,
+  onReturn,
+  onEscalate,
   onView,
 }: {
   entries: ReviewEntry[];
@@ -362,6 +462,8 @@ function DetailGridView({
   toggleSelect: (id: string) => void;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
+  onReturn: (id: string) => void;
+  onEscalate: (id: string) => void;
   onView: (entry: ReviewEntry) => void;
 }) {
   const allSelected = entries.length > 0 && entries.every((e) => selected.has(e.id));
@@ -450,12 +552,18 @@ function DetailGridView({
             )}
 
             {/* Actions */}
-            <div className="mt-ram-md flex gap-ram-sm border-t border-border pt-ram-md" onClick={(e) => e.stopPropagation()}>
+            <div className="mt-ram-md flex flex-wrap gap-ram-sm border-t border-border pt-ram-md" onClick={(e) => e.stopPropagation()}>
               <button onClick={() => onApprove(entry.id)} className="flex items-center gap-ram-xxs p-ram-sm text-success-400 hover:bg-success-100 rounded-ram-xs text-text-xs font-medium">
                 <CheckCircle className="h-4 w-4" /> Approve
               </button>
               <button onClick={() => onReject(entry.id)} className="flex items-center gap-ram-xxs p-ram-sm text-error-600 hover:bg-error-100 rounded-ram-xs text-text-xs font-medium">
                 <XCircle className="h-4 w-4" /> Reject
+              </button>
+              <button onClick={() => onReturn(entry.id)} className="flex items-center gap-ram-xxs p-ram-sm text-warning-400 hover:bg-warning-100 rounded-ram-xs text-text-xs font-medium">
+                <CornerUpLeft className="h-4 w-4" /> Return
+              </button>
+              <button onClick={() => onEscalate(entry.id)} className="flex items-center gap-ram-xxs p-ram-sm text-error-600 hover:bg-error-100 rounded-ram-xs text-text-xs font-medium">
+                <ShieldAlert className="h-4 w-4" /> Escalate
               </button>
               <button onClick={() => onView(entry)} className="flex items-center gap-ram-xxs p-ram-sm text-brand-500 hover:bg-brand-100 rounded-ram-xs text-text-xs font-medium ml-auto">
                 <Eye className="h-4 w-4" /> View
@@ -478,6 +586,8 @@ function MobileGroupedView({
   toggleSelect,
   onApprove,
   onReject,
+  onReturn,
+  onEscalate,
   onView,
 }: {
   groups: { label: string; totalEntries: number; pendingCount: number; entries: ReviewEntry[] }[];
@@ -488,6 +598,8 @@ function MobileGroupedView({
   toggleSelect: (id: string) => void;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
+  onReturn: (id: string) => void;
+  onEscalate: (id: string) => void;
   onView: (entry: ReviewEntry) => void;
 }) {
   return (
@@ -527,10 +639,12 @@ function MobileGroupedView({
                   )}
                 </div>
               )}
-              <div className="mt-ram-lg flex gap-ram-md">
+              <div className="mt-ram-lg flex flex-wrap gap-ram-md">
                 <button onClick={() => onApprove(entry.id)} className="p-ram-md text-success-400 hover:bg-success-100 rounded-ram-xs"><CheckCircle className="h-5 w-5" /></button>
                 <button onClick={() => onReject(entry.id)} className="p-ram-md text-error-600 hover:bg-error-100 rounded-ram-xs"><XCircle className="h-5 w-5" /></button>
-                <button onClick={() => onView(entry)} className="p-ram-md text-brand-500 hover:bg-brand-100 rounded-ram-xs"><Eye className="h-5 w-5" /></button>
+                <button onClick={() => onReturn(entry.id)} className="p-ram-md text-warning-400 hover:bg-warning-100 rounded-ram-xs"><CornerUpLeft className="h-5 w-5" /></button>
+                <button onClick={() => onEscalate(entry.id)} className="p-ram-md text-error-600 hover:bg-error-100 rounded-ram-xs"><ShieldAlert className="h-5 w-5" /></button>
+                <button onClick={() => onView(entry)} className="p-ram-md text-brand-500 hover:bg-brand-100 rounded-ram-xs ml-auto"><Eye className="h-5 w-5" /></button>
               </div>
             </div>
           ))}
@@ -551,6 +665,8 @@ function DesktopGroupedTable({
   toggleSelect,
   onApprove,
   onReject,
+  onReturn,
+  onEscalate,
   onView,
 }: {
   groups: { label: string; totalEntries: number; pendingCount: number; entries: ReviewEntry[] }[];
@@ -562,6 +678,8 @@ function DesktopGroupedTable({
   toggleSelect: (id: string) => void;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
+  onReturn: (id: string) => void;
+  onEscalate: (id: string) => void;
   onView: (entry: ReviewEntry) => void;
 }) {
   return (
@@ -576,7 +694,7 @@ function DesktopGroupedTable({
             <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Asset</th>
             <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Operator</th>
             <th className="text-left px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Status</th>
-            <th className="w-20 px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Actions</th>
+            <th className="w-36 px-ram-lg py-ram-lg text-text-xs font-extrabold text-gray-600 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -590,6 +708,8 @@ function DesktopGroupedTable({
               onToggleSelect={toggleSelect}
               onApprove={onApprove}
               onReject={onReject}
+              onReturn={onReturn}
+              onEscalate={onEscalate}
               onView={onView}
             />
           ))}
@@ -608,10 +728,12 @@ interface GroupRowsProps {
   onToggleSelect: (id: string) => void;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
+  onReturn: (id: string) => void;
+  onEscalate: (id: string) => void;
   onView: (entry: ReviewEntry) => void;
 }
 
-function GroupRows({ group, collapsed, onToggle, selected, onToggleSelect, onApprove, onReject, onView }: GroupRowsProps) {
+function GroupRows({ group, collapsed, onToggle, selected, onToggleSelect, onApprove, onReject, onReturn, onEscalate, onView }: GroupRowsProps) {
   return (
     <>
       <tr className="bg-gray-100 cursor-pointer" onClick={onToggle}>
@@ -657,9 +779,11 @@ function GroupRows({ group, collapsed, onToggle, selected, onToggleSelect, onApp
           </td>
           <td className="px-ram-lg" onClick={(e) => e.stopPropagation()}>
             <div className="flex gap-ram-xxs">
-              <button onClick={() => onApprove(entry.id)} className="p-1 text-success-400 hover:text-success-900"><CheckCircle className="h-4 w-4" /></button>
-              <button onClick={() => onReject(entry.id)} className="p-1 text-error-600 hover:text-error-900"><XCircle className="h-4 w-4" /></button>
-              <button onClick={() => onView(entry)} className="p-1 text-brand-500 hover:text-brand-600"><Eye className="h-4 w-4" /></button>
+              <button title="Approve" onClick={() => onApprove(entry.id)} className="p-1 text-success-400 hover:text-success-900"><CheckCircle className="h-4 w-4" /></button>
+              <button title="Reject" onClick={() => onReject(entry.id)} className="p-1 text-error-600 hover:text-error-900"><XCircle className="h-4 w-4" /></button>
+              <button title="Return for correction" onClick={() => onReturn(entry.id)} className="p-1 text-warning-400 hover:text-warning-500"><CornerUpLeft className="h-4 w-4" /></button>
+              <button title="Escalate to deviation" onClick={() => onEscalate(entry.id)} className="p-1 text-error-600 hover:text-error-900"><ShieldAlert className="h-4 w-4" /></button>
+              <button title="View" onClick={() => onView(entry)} className="p-1 text-brand-500 hover:text-brand-600"><Eye className="h-4 w-4" /></button>
             </div>
           </td>
         </tr>

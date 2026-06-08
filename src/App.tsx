@@ -7,6 +7,7 @@ import { LogbookContext, useLogbookState } from "@/hooks/useLogbookState";
 import { DeviceLocationProvider } from "@/hooks/useDeviceLocation";
 import { CurrentUserProvider } from "@/hooks/useCurrentUser";
 import { RequireAuth } from "@/components/ram/RequireAuth";
+import { ErrorBoundary } from "@/components/ram/ErrorBoundary";
 
 // Existing screens
 import LogbookEntryForm from "./pages/LogbookEntryForm";
@@ -78,7 +79,9 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <AppInner />
+      <ErrorBoundary>
+        <AppInner />
+      </ErrorBoundary>
     </TooltipProvider>
   </QueryClientProvider>
 );

@@ -2,31 +2,19 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AppLayout } from "@/components/ram/AppLayout";
 import { HeaderNav } from "@/components/ram/HeaderNav";
-import { RAMInput } from "@/components/ram/RAMInput";
-import { RAMTextarea } from "@/components/ram/RAMTextarea";
-import { RAMToggle } from "@/components/ram/RAMToggle";
 import { PaperEntryForm } from "@/components/ram/PaperEntryForm";
 import { ESignDrawer, type SignatureMeaning } from "@/components/ram/ESignDrawer";
 import { ExceptionDrawer } from "@/components/ram/ExceptionDrawer";
 import { SuccessDrawer } from "@/components/ram/SuccessDrawer";
-import { FieldVerdict } from "@/components/ram/FieldVerdict";
-import { FamilyChip } from "@/components/ram/FamilyChip";
 import { LinkedRamContext, ramContextByLogbookId } from "@/components/ram/LinkedRamContext";
-import {
-  DropdownField,
-  StatusField,
-  LinkedWOField,
-  AttachmentField,
-  PartsUsedField,
-  TripletField,
-} from "@/components/ram/EntryFieldRenderer";
+import { renderField } from "@/components/ram/renderField";
 import { Button } from "@/components/ui/button";
 import { useLogbook } from "@/hooks/useLogbookState";
 import { mockLogbooks } from "@/data/mockLogbooks";
 import { mockInstances } from "@/data/mockAssets";
 import { useDeviceLocation } from "@/hooks/useDeviceLocation";
-import { evaluateField, failedFields } from "@/lib/evaluation";
-import { Calendar, Zap, Clock, ArrowRight, AlertTriangle } from "lucide-react";
+import { failedFields } from "@/lib/evaluation";
+import { Zap, Clock, ArrowRight, AlertTriangle } from "lucide-react";
 
 // Simulated "last entry" values for Quick Fill
 const lastEntryValues: Record<string, string> = {
